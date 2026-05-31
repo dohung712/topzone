@@ -356,7 +356,7 @@ hr.div{border:none;border-top:1px solid var(--bg4);margin:16px 0}
 // ĐỔI MẬT KHẨU TẠI ĐÂY:
 const PASSWORDS = {
   NV: 'topzone2024',   // Mật khẩu cho Nhân Viên
-  QL: 'admin@tz2024',  // Mật khẩu cho Quản Lý (có thêm quyền)
+  QL: 'tz1',  // Mật khẩu cho Quản Lý (có thêm quyền)
 };
 const LOGIN_KEY = 'tz_login_v6';
 let currentRole = '';
@@ -628,6 +628,10 @@ checkLogin();
       <option value="fail">❌ Sai</option>
       <option value="pending">⏳ Chờ</option>
     </select>
+    <select id="filterViewerRole" onchange="renderHistory()" title="Chọn vai trò xem – Quản Lý có thể xoá báo cáo">
+      <option value="">👤 Nhân Viên</option>
+      <option value="QL">🔑 Quản Lý (có quyền xoá)</option>
+    </select>
   </div>
   <div id="historyList"></div>
 </div>
@@ -805,15 +809,17 @@ checkLogin();
   <div class="card">
     <div class="card-header">
       <div class="card-title">🖼️ ImgBB – Upload Ảnh Lấy Link</div>
-      <span id="imgbbBadge" class="badge badge-gray">Chưa cài</span>
+      <span id="imgbbBadge" class="badge badge-green">✅ Đã cài sẵn</span>
     </div>
     <div class="card-body">
       <p style="font-size:13px;color:var(--txt2);line-height:1.6">Ảnh sẽ upload lên <strong>ImgBB</strong> (miễn phí) và sinh ra link công khai. Quản lý nhấn link xem ảnh bằng chứng trực tiếp.</p>
-      <div class="setup-step"><div class="step-num">1</div><div class="step-text">Truy cập <a href="https://api.imgbb.com" target="_blank" style="color:var(--blue)">api.imgbb.com</a> → Đăng ký miễn phí → <strong>Get API Key</strong></div></div>
-      <div class="setup-step"><div class="step-num">2</div><div class="step-text">Copy API Key → Dán vào ô dưới → Test → Lưu</div></div>
-      <span class="field-label">ImgBB API Key</span>
+      <div style="margin:10px 0;padding:10px 14px;background:var(--green-bg);border:1px solid rgba(0,201,122,.2);border-radius:10px;font-size:12px;color:var(--green)">
+        ✅ <strong>API Key đã được cài sẵn</strong> – Tính năng upload ảnh lấy link hoạt động ngay, không cần cấu hình thêm.
+      </div>
+      <div class="setup-step"><div class="step-num">※</div><div class="step-text">Nếu muốn dùng API Key riêng: Truy cập <a href="https://api.imgbb.com" target="_blank" style="color:var(--blue)">api.imgbb.com</a> → Đăng ký → <strong>Get API Key</strong> → dán vào ô dưới</div></div>
+      <span class="field-label">ImgBB API Key (tùy chọn – để ghi đè key mặc định)</span>
       <div style="display:flex;gap:8px">
-        <input type="password" id="imgbbKey" placeholder="abc123def..." style="font-size:12px">
+        <input type="password" id="imgbbKey" placeholder="Để trống = dùng key mặc định" style="font-size:12px">
         <button class="btn btn-ghost btn-sm" onclick="testImgbb()">🔌 Test</button>
         <button class="btn btn-green btn-sm" onclick="saveImgbb()">Lưu</button>
       </div>
@@ -918,6 +924,9 @@ const HASH_KEY      = 'tz_hashes_v6';
 const IMGBB_KEY     = 'tz_imgbb_key';
 const THEME_KEY     = 'tz_theme_v6';
 const JSONBIN_KEY   = 'tz_jsonbin_v6';
+
+// ImgBB default key (pre-configured)
+const IMGBB_DEFAULT_KEY = '9a034bb28f073f94529fefbf8b94c578';
 
 // JSONBin.io config (pre-filled)
 let jsonbinCfg = {apiKey:'$2a$10$QN7YosZtw1ISpF4oYcjMW.9uVCCmFNzx1C0Lnox.NSKL9AsJJZvpG', binId:'6a1c226b21f9ee59d2a0e6b2'};
@@ -1131,7 +1140,8 @@ function updateSharedUI(){
 function load(){
   try{reports=JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');}catch{reports=[];}
   try{photoHashes=JSON.parse(localStorage.getItem(HASH_KEY)||'{}');}catch{photoHashes={};}
-  imgbbKey=localStorage.getItem(IMGBB_KEY)||'';
+  imgbbKey=localStorage.getItem(IMGBB_KEY)||IMGBB_DEFAULT_KEY;
+  if(!localStorage.getItem(IMGBB_KEY)&&IMGBB_DEFAULT_KEY){localStorage.setItem(IMGBB_KEY,IMGBB_DEFAULT_KEY);}
   loadJsonbinCfg();
 }
 function save(){
@@ -1299,8 +1309,9 @@ function runSmartAnalysis(){
 
 // ─── IMGBB ───
 async function uploadToImgbb(dataUrl){
-  if(!imgbbKey)return null;
-  try{const b64=dataUrl.split(',')[1];const fd=new FormData();fd.append('key',imgbbKey);fd.append('image',b64);const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});const j=await r.json();return j.success?j.data.url:null;}catch{return null;}
+  const key=imgbbKey||IMGBB_DEFAULT_KEY;
+  if(!key)return null;
+  try{const b64=dataUrl.split(',')[1];const fd=new FormData();fd.append('key',key);fd.append('image',b64);const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});const j=await r.json();return j.success?j.data.url:null;}catch{return null;}
 }
 async function testImgbb(){
   const k=document.getElementById('imgbbKey').value.trim();if(!k){showToast('⚠️ Nhập API Key');return;}
@@ -1308,8 +1319,8 @@ async function testImgbb(){
   const tiny='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==';
   try{const b64=tiny.split(',')[1];const fd=new FormData();fd.append('key',k);fd.append('image',b64);const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});const j=await r.json();if(j.success){log.innerHTML=`<span class="ok">✅ ImgBB OK! <a href="${j.data.url}" target="_blank" style="color:var(--blue)">${j.data.url}</a></span>`;showToast('✅ ImgBB hoạt động!');}else{log.innerHTML=`<span class="err">❌ ${JSON.stringify(j.error)}</span>`;}}catch(e){log.innerHTML=`<span class="err">❌ ${e.message}</span>`;}
 }
-function saveImgbb(){const k=document.getElementById('imgbbKey').value.trim();if(!k){showToast('⚠️ Nhập API Key');return;}imgbbKey=k;localStorage.setItem(IMGBB_KEY,k);updateImgbbUI();showToast('✅ Đã lưu ImgBB Key');}
-function updateImgbbUI(){const badge=document.getElementById('imgbbBadge');if(imgbbKey){badge.textContent='✅ Đã cài';badge.className='badge badge-green';document.getElementById('imgbbKey').value=imgbbKey;}else{badge.textContent='Chưa cài';badge.className='badge badge-gray';}}
+function saveImgbb(){const k=document.getElementById('imgbbKey').value.trim()||IMGBB_DEFAULT_KEY;if(!k){showToast('⚠️ Không có API Key');return;}imgbbKey=k;localStorage.setItem(IMGBB_KEY,k);updateImgbbUI();showToast('✅ Đã lưu ImgBB Key');}
+function updateImgbbUI(){const badge=document.getElementById('imgbbBadge');const effectiveKey=imgbbKey||IMGBB_DEFAULT_KEY;if(effectiveKey){badge.textContent='✅ Đã cài';badge.className='badge badge-green';if(document.getElementById('imgbbKey'))document.getElementById('imgbbKey').value=imgbbKey!==IMGBB_DEFAULT_KEY?imgbbKey:'';}else{badge.textContent='Chưa cài';badge.className='badge badge-gray';}}
 
 // ─── SUBMIT ───
 async function submitReport(){
@@ -1322,7 +1333,7 @@ async function submitReport(){
   const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='⏳ Đang lưu...';
   currentPhotos.forEach(p=>{if(!p.isDup)photoHashes[p.hash]={date,empName:name,reportId:Date.now()};});
   const imgbbLinks=[];
-  if(imgbbKey&&currentPhotos.length){
+  if((imgbbKey||IMGBB_DEFAULT_KEY)&&currentPhotos.length){
     btn.textContent='⏳ Upload ảnh...';
     const prog=document.getElementById('uploadProgress');const fill=document.getElementById('progFill');const lbl=document.getElementById('progLabel');
     prog.classList.add('show');
@@ -1496,11 +1507,25 @@ function previewReport(){
   document.getElementById('previewContent').innerHTML=html;document.getElementById('previewModal').classList.remove('hidden');
 }
 
+// ─── DELETE REPORT (Quản Lý) ───
+async function deleteReport(id){
+  const r=reports.find(x=>x.id===id);
+  if(!r)return;
+  if(!confirm(`Xoá báo cáo của ${r.name} (${r.date})?\nThao tác này không thể hoàn tác.`))return;
+  reports=reports.filter(x=>x.id!==id);
+  save();
+  await pushToShared();
+  renderHistory();
+  updateSharedUI();
+  showToast('🗑 Đã xoá báo cáo · Shared');
+}
+
 // ─── HISTORY ───
 function renderHistory(){
   const days=parseInt(document.getElementById('filterDays').value||7);
   const nf=(document.getElementById('filterName')?.value||'').toLowerCase();
   const vf=document.getElementById('filterVerdict')?.value||'';
+  const viewerRole=document.getElementById('filterViewerRole')?.value||'';
   const now=Date.now();
   const filtered=reports.filter(r=>{
     if(nf&&!r.name.toLowerCase().includes(nf))return false;
@@ -1510,6 +1535,7 @@ function renderHistory(){
   });
   const list=document.getElementById('historyList');
   if(!filtered.length){list.innerHTML='<div class="empty"><div class="empty-icon">📋</div>Chưa có báo cáo</div>';return;}
+  const isManager=viewerRole==='QL';
   list.innerHTML=filtered.map(r=>{
     const total=Object.values(r.actions||{}).reduce((a,b)=>a+b,0);
     const acts=Object.entries(r.actions||{}).map(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);return a?`<span class="badge badge-gray" style="font-size:10px">${a.icon}${v}${a.unit}</span>`:''}).join(' ');
@@ -1519,7 +1545,8 @@ function renderHistory(){
     if(r.photos&&r.photos.length)photosHtml='<div class="log-photos-row">'+r.photos.slice(0,8).map(p=>p.dataUrl?`<img class="log-photo" src="${p.dataUrl}" onclick="zoom('${p.dataUrl}')">`:`<a href="${p.imgbbLink||'#'}" target="_blank"><img class="log-photo" src="${p.imgbbLink||''}" alt="ảnh"></a>`).join('')+'</div>';
     let linksHtml='';
     if(r.imgbbLinks&&r.imgbbLinks.length)linksHtml='<div style="margin:4px 0;display:flex;flex-wrap:wrap;gap:4px">'+r.imgbbLinks.map((l,i)=>`<a href="${l}" target="_blank" class="badge badge-blue" style="font-size:10px">🔗 Ảnh ${i+1}</a>`).join('')+'</div>';
-    return `<div class="log-item"><div class="log-head"><div class="log-name">${r.name}</div><span class="badge badge-gray" style="font-size:10px">${r.role||'NV'}</span><span class="badge badge-gray" style="font-size:10px">${r.shift||'—'}</span><div class="log-date">${r.date?new Date(r.date+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'}):'—'}</div></div><div class="log-actions">${acts||'<span style="font-size:12px;color:var(--txt3)">Không có hoạt động</span>'}</div>${photosHtml}${linksHtml}<div class="log-foot"><div style="font-size:12px;color:var(--txt3)">Tổng: <strong style="color:var(--txt)">${total}</strong> hành động · ${r.photoCount||0} ảnh</div><span class="verdict-mini ${vc}">${vt}</span></div></div>`;
+    const deleteBtn=isManager?`<button class="btn btn-danger" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="deleteReport(${r.id})">🗑 Xoá</button>`:'';
+    return `<div class="log-item"><div class="log-head"><div class="log-name">${r.name}</div><span class="badge badge-gray" style="font-size:10px">${r.role||'NV'}</span><span class="badge badge-gray" style="font-size:10px">${r.shift||'—'}</span><div class="log-date">${r.date?new Date(r.date+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'}):'—'}</div>${deleteBtn}</div><div class="log-actions">${acts||'<span style="font-size:12px;color:var(--txt3)">Không có hoạt động</span>'}</div>${photosHtml}${linksHtml}<div class="log-foot"><div style="font-size:12px;color:var(--txt3)">Tổng: <strong style="color:var(--txt)">${total}</strong> hành động · ${r.photoCount||0} ảnh</div><span class="verdict-mini ${vc}">${vt}</span></div></div>`;
   }).join('');
 }
 
