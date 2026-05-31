@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topzone v6 – Quản Lý Truyền Thông</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;--bg2:#161616;--bg3:#1E1E1E;--bg4:#2A2A2A;
+  --txt:#FFFFFF;--txt2:#DADADA;--txt3:#888888;
+  --title:#FFFFFF;
+  --accent:#E8321C;--accent2:#FF5A3D;--accent-dark:#B71C1C;
+  --orange:#FF7D1A;--gold:#FFB800;
+  --mid:#3D3D3D;--muted:#606060;
+  --green:#00C97A;--green-bg:rgba(0,201,122,.1);
+  --blue:#2E8BFF;--blue-bg:rgba(46,139,255,.1);
+  --warn:#FF9800;--warn-bg:rgba(255,152,0,.1);
+  --r:10px;--r2:16px;
+  --sh:0 4px 24px rgba(0,0,0,.4);
+  --sh2:0 8px 40px rgba(0,0,0,.6);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--mid);border-radius:3px}
+
+/* ─── HEADER ─── */
+.header{background:var(--bg2);border-bottom:1px solid var(--bg4);position:sticky;top:0;z-index:200;backdrop-filter:blur(20px)}
+.header-inner{max-width:1040px;margin:0 auto;padding:0 20px;height:60px;display:flex;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{background:linear-gradient(135deg,var(--accent),var(--orange));width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;letter-spacing:-.5px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--title);line-height:1.1}
+.logo-sub{font-size:10px;color:var(--txt3);font-family:'DM Sans',sans-serif;font-weight:400}
+.header-center{flex:1}
+.header-date{font-size:11px;color:var(--txt3);text-align:center}
+.sync-pill{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid;transition:.2s;white-space:nowrap}
+.sync-pill.on{border-color:rgba(0,201,122,.4);background:var(--green-bg);color:var(--green)}
+.sync-pill.off{border-color:var(--bg4);background:var(--bg3);color:var(--txt3)}
+.sync-pill.syncing{border-color:rgba(46,139,255,.4);background:var(--blue-bg);color:var(--blue)}
+.btn-theme-toggle{background:var(--bg3);border:1px solid var(--bg4);padding:5px 10px;border-radius:20px;font-size:11px;font-weight:600;color:var(--txt3);cursor:pointer;white-space:nowrap;transition:.2s}
+.btn-theme-toggle:hover{border-color:var(--accent);color:var(--txt)}
+
+/* ─── THEME PANEL ─── */
+.theme-panel{background:var(--bg2);border-bottom:2px solid var(--bg4);overflow:hidden;max-height:0;transition:max-height .3s ease;display:none}
+.theme-panel.open{max-height:200px;display:block}
+.theme-inner{max-width:1040px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.theme-group{display:flex;align-items:center;gap:8px}
+.theme-label{font-size:11px;color:var(--txt3);font-weight:600;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+.theme-picker{width:36px;height:36px;border-radius:8px;border:2px solid var(--bg4);cursor:pointer;padding:0;background:none;overflow:hidden}
+.theme-picker::-webkit-color-swatch-wrapper{padding:0}
+.theme-picker::-webkit-color-swatch{border:none;border-radius:6px}
+.theme-presets{display:flex;gap:6px}
+.preset-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s}
+.preset-dot:hover,.preset-dot.active{border-color:var(--txt);transform:scale(1.15)}
+.theme-reset{padding:5px 12px;border-radius:6px;font-size:11px;background:var(--bg3);border:1px solid var(--bg4);color:var(--txt3);cursor:pointer}
+.theme-reset:hover{border-color:var(--accent);color:var(--txt)}
+
+/* ─── NAV ─── */
+.nav{background:var(--bg2);border-bottom:1px solid var(--bg4);position:sticky;top:60px;z-index:199}
+.nav-inner{max-width:1040px;margin:0 auto;display:flex;overflow-x:auto;padding:0 20px;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-btn{padding:13px 14px;font-size:12px;font-weight:600;color:var(--txt3);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:.2s;letter-spacing:.3px;display:flex;align-items:center;gap:5px}
+.nav-btn.active{color:var(--accent2);border-bottom-color:var(--accent2)}
+.nav-btn:hover:not(.active){color:var(--txt2)}
+.nav-badge{background:var(--accent);color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;line-height:1.4;min-width:16px;text-align:center}
+
+/* ─── LAYOUT ─── */
+.main{max-width:1040px;margin:0 auto;padding:24px 20px 80px}
+.section{display:none}.section.active{display:block}
+
+/* ─── CARDS ─── */
+.card{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r2);margin-bottom:16px;overflow:hidden}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--bg4);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.3px;color:var(--title);display:flex;align-items:center;gap:8px}
+.card-body{padding:18px 20px}
+
+/* ─── SHARED BANNER ─── */
+.shared-banner{background:linear-gradient(135deg,rgba(0,201,122,.12),rgba(46,139,255,.08));border:1px solid rgba(0,201,122,.25);border-radius:var(--r2);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.shared-banner-icon{font-size:24px;flex-shrink:0}
+.shared-banner-text{flex:1}
+.shared-banner-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--green)}
+.shared-banner-sub{font-size:11px;color:var(--txt3);margin-top:2px}
+.shared-count{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:var(--green)}
+
+/* ─── FORM ELEMENTS ─── */
+.field-label{font-size:11px;font-weight:600;color:var(--txt3);display:block;margin-bottom:5px;margin-top:14px;letter-spacing:.5px;text-transform:uppercase}
+.field-label:first-child{margin-top:0}
+input[type=text],input[type=date],input[type=number],input[type=password],select,textarea{
+  width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--bg4);border-radius:var(--r);
+  font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt);outline:none;transition:.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(232,50,28,.15)}
+select option{background:var(--bg3);color:var(--txt)}
+textarea{resize:vertical;min-height:70px}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* ─── EMP CHIPS ─── */
+.emp-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.emp-chip{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--bg4);background:var(--bg3);color:var(--txt3);transition:.2s;white-space:nowrap}
+.emp-chip:hover{border-color:var(--mid);color:var(--txt2)}
+.emp-chip.active{border-color:var(--accent);background:rgba(232,50,28,.15);color:var(--accent2)}
+.emp-chip.pg{border-color:rgba(46,139,255,.3);color:var(--blue)}
+.emp-chip.pg.active{background:rgba(46,139,255,.15);border-color:var(--blue)}
+.emp-sep{width:100%;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin:4px 0}
+.emp-sep::before,.emp-sep::after{content:'';flex:1;height:1px;background:var(--bg4)}
+
+/* ─── ACTIONS ─── */
+.action-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:1px solid var(--bg4);margin-bottom:6px;background:var(--bg3);transition:.2s;cursor:pointer}
+.action-row:hover{border-color:var(--mid)}
+.action-row.selected{border-color:rgba(232,50,28,.5);background:rgba(232,50,28,.08)}
+.action-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.action-label{flex:1;font-size:13px;font-weight:500}
+.action-unit{font-size:11px;color:var(--txt3);flex-shrink:0;width:60px;text-align:right}
+.action-count-wrap{display:flex;align-items:center;gap:6px}
+.count-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--bg4);background:var(--bg4);color:var(--txt2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;flex-shrink:0;transition:.15s;user-select:none}
+.count-btn:hover{background:var(--mid)}
+.count-input{width:44px;padding:5px 6px;text-align:center;font-size:13px;font-weight:600;background:var(--bg2);border:1px solid var(--bg4);border-radius:6px;color:var(--txt)}
+
+/* ─── PHOTO ─── */
+.upload-zone{border:2px dashed var(--bg4);border-radius:var(--r2);padding:28px 20px;text-align:center;cursor:pointer;transition:.3s;background:var(--bg3)}
+.upload-zone:hover{border-color:var(--accent);background:rgba(232,50,28,.05)}
+.upload-zone-icon{font-size:32px;margin-bottom:8px}
+.upload-zone-title{font-size:14px;font-weight:600;color:var(--txt2);margin-bottom:3px}
+.upload-zone-sub{font-size:11px;color:var(--txt3)}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:14px}
+.preview-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--bg4);cursor:pointer;transition:.2s}
+.preview-item:hover{transform:scale(1.03);z-index:2}
+.preview-item img{width:100%;height:100%;object-fit:cover}
+.preview-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.75);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dup-ribbon{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0,rgba(232,50,28,.9),transparent);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:4px 2px;letter-spacing:.5px}
+.ai-ribbon{position:absolute;top:0;left:0;right:0;background:linear-gradient(180deg,rgba(46,139,255,.85),transparent);color:#fff;font-size:9px;font-weight:600;text-align:center;padding:3px 2px}
+
+/* ─── AI PANEL ─── */
+.ai-panel{background:linear-gradient(135deg,rgba(46,139,255,.08),rgba(46,139,255,.03));border:1px solid rgba(46,139,255,.2);border-radius:var(--r2);padding:18px 20px;margin-top:14px}
+.ai-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:8px;flex-wrap:wrap}
+.ai-panel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--blue);display:flex;align-items:center;gap:8px}
+.ai-verdict{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;margin-top:10px;display:flex;align-items:flex-start;gap:10px;flex-direction:column}
+.ai-verdict.pass{background:var(--green-bg);border:1px solid rgba(0,201,122,.25);color:var(--green)}
+.ai-verdict.fail{background:rgba(232,50,28,.1);border:1px solid rgba(232,50,28,.25);color:var(--accent2)}
+.ai-verdict.warn{background:var(--warn-bg);border:1px solid rgba(255,152,0,.25);color:var(--warn)}
+.ai-detected-badges{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+
+/* ─── PROGRESS ─── */
+.prog-wrap{margin-top:12px;display:none}
+.prog-wrap.show{display:block}
+.prog-track{background:var(--bg4);border-radius:4px;height:4px;overflow:hidden;margin-bottom:6px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--orange));transition:width .4s;border-radius:4px}
+.prog-label{font-size:11px;color:var(--txt3)}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── BUTTONS ─── */
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:7px;letter-spacing:.2px;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--orange));color:#fff;box-shadow:0 4px 16px rgba(232,50,28,.3)}
+.btn-primary:hover{box-shadow:0 6px 24px rgba(232,50,28,.45);transform:translateY(-1px)}
+.btn-primary:active{transform:scale(.98)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-ghost{background:transparent;color:var(--txt2);border:1px solid var(--bg4)}
+.btn-ghost:hover{background:var(--bg3);border-color:var(--mid)}
+.btn-green{background:linear-gradient(135deg,#00A862,var(--green));color:#fff;box-shadow:0 4px 16px rgba(0,201,122,.25)}
+.btn-green:hover{opacity:.9}
+.btn-blue{background:linear-gradient(135deg,#1565C0,var(--blue));color:#fff}
+.btn-blue:hover{opacity:.9}
+.btn-danger{background:transparent;color:#EF5350;border:1px solid rgba(239,83,80,.3);font-size:12px;padding:6px 12px}
+.btn-danger:hover{background:rgba(239,83,80,.1)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-xs{padding:5px 10px;font-size:11px}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;gap:3px}
+.badge-red{background:rgba(232,50,28,.15);color:var(--accent2);border:1px solid rgba(232,50,28,.2)}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid rgba(0,201,122,.2)}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid rgba(46,139,255,.2)}
+.badge-gray{background:var(--bg3);color:var(--txt3);border:1px solid var(--bg4)}
+.badge-gold{background:rgba(255,184,0,.12);color:var(--gold);border:1px solid rgba(255,184,0,.2)}
+.badge-warn{background:var(--warn-bg);color:var(--warn);border:1px solid rgba(255,152,0,.25)}
+
+/* ─── DUP WARNING ─── */
+.dup-warning{background:rgba(255,152,0,.08);border:1px solid rgba(255,152,0,.25);border-radius:10px;padding:12px 15px;font-size:12px;color:var(--warn);margin-top:10px;display:none;line-height:1.6}
+.dup-warning.show{display:block}
+
+/* ─── SUMMARY ─── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg2);border:1px solid var(--bg4);border-radius:12px;padding:14px;text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1;color:var(--txt)}
+.stat-num.accent{background:linear-gradient(135deg,var(--accent2),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-lbl{font-size:10px;color:var(--txt3);margin-top:4px;letter-spacing:.3px}
+
+/* ─── ANALYTICS ─── */
+.analytics-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.atab{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--bg4);background:var(--bg3);color:var(--txt3);transition:.2s}
+.atab.active{background:rgba(232,50,28,.15);border-color:var(--accent);color:var(--accent2)}
+
+/* ─── MISSING REPORT ALERT ─── */
+.missing-list{display:flex;flex-direction:column;gap:6px}
+.missing-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;background:rgba(255,152,0,.06);border:1px solid rgba(255,152,0,.2)}
+.missing-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg4);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:10px;color:var(--txt3);flex-shrink:0}
+.missing-name{flex:1;font-size:13px;font-weight:600}
+.missing-days{font-size:11px;color:var(--txt3)}
+
+/* ─── BAR CHART ─── */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:12px;color:var(--txt2);width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;background:var(--bg4);border-radius:3px;height:8px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--orange));border-radius:3px;transition:width .6s}
+.bar-fill.green{background:linear-gradient(90deg,#00A862,var(--green))}
+.bar-fill.blue{background:linear-gradient(90deg,#1565C0,var(--blue))}
+.bar-val{font-size:12px;font-weight:700;color:var(--accent2);width:36px;text-align:right;flex-shrink:0}
+
+/* ─── HISTORY ─── */
+.filter-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-bar select,.filter-bar input{width:auto;font-size:12px}
+.filter-bar label{margin:0;font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.log-item{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r2);padding:16px;margin-bottom:10px;transition:.2s}
+.log-item:hover{border-color:var(--mid)}
+.log-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.log-name{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--title)}
+.log-date{font-size:11px;color:var(--txt3)}
+.log-actions{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.log-photos-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.log-photo{width:48px;height:48px;border-radius:6px;object-fit:cover;border:1px solid var(--bg4);cursor:pointer;transition:.15s}
+.log-photo:hover{transform:scale(1.1)}
+.log-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--bg4);flex-wrap:wrap;gap:6px}
+.verdict-mini{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px}
+.verdict-pass{background:var(--green-bg);color:var(--green)}
+.verdict-fail{background:rgba(232,50,28,.1);color:var(--accent2)}
+.verdict-pending{background:var(--bg4);color:var(--txt3)}
+
+/* ─── LEADERBOARD ─── */
+.lb-wrap{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r2);overflow:hidden}
+.lb-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bg4);transition:.2s}
+.lb-row:last-child{border:none}
+.lb-row:hover{background:var(--bg3)}
+.lb-rank{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;width:32px;text-align:center;color:var(--muted)}
+.lb-rank.t1{color:var(--gold)}.lb-rank.t2{color:#B0BEC5}.lb-rank.t3{color:#A1887F}
+.lb-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;color:#fff;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-detail{font-size:11px;color:var(--txt3);margin-top:1px}
+.lb-bar-wrap{margin-top:5px;background:var(--bg4);border-radius:3px;height:3px;overflow:hidden}
+.lb-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--orange));border-radius:3px;transition:width .6s}
+.lb-score{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--accent2);flex-shrink:0}
+
+/* ─── WEEK/MONTH TABLE ─── */
+.period-table{width:100%;border-collapse:collapse;font-size:12px}
+.period-table th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--bg4);font-size:10px;font-weight:700;color:var(--txt3);letter-spacing:.5px;text-transform:uppercase;background:var(--bg3)}
+.period-table td{padding:8px 12px;border-bottom:1px solid var(--bg4);vertical-align:middle}
+.period-table tr:last-child td{border:none}
+.period-table tr:hover td{background:var(--bg3)}
+.missing-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-right:4px}
+.present-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:4px}
+
+/* ─── DRIVE / SETTINGS ─── */
+.drive-log{background:#0A0A0A;border:1px solid var(--bg4);border-radius:10px;padding:12px 14px;font-size:11px;color:#7A7A8C;font-family:'Courier New',monospace;max-height:180px;overflow-y:auto;margin-top:10px;line-height:1.8}
+.drive-log .ok{color:var(--green)}.drive-log .err{color:#EF5350}.drive-log .info{color:var(--blue)}.drive-log .warn{color:var(--warn)}
+.setup-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.step-num{background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;line-height:1.6;color:var(--txt2)}
+.step-text strong{color:var(--txt)}
+.step-text a{color:var(--blue)}
+
+/* ─── ZALO REPORT ─── */
+.report-preview{background:#0A0A0A;border:1px solid var(--bg4);border-radius:10px;padding:14px;font-size:12px;font-family:'Courier New',monospace;color:#C8F0C8;line-height:1.8;white-space:pre-wrap;max-height:400px;overflow-y:auto}
+
+/* ─── MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r2);max-width:640px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--bg4);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--txt3);width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:.15s}
+.modal-close:hover{background:var(--bg4);color:var(--txt)}
+.modal-body{padding:20px}
+
+/* ─── TOAST ─── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--bg3);border:1px solid var(--bg4);color:var(--txt);padding:10px 20px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:.3s;pointer-events:none;box-shadow:var(--sh);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.empty{text-align:center;padding:48px 20px;color:var(--muted);font-size:13px}
+.empty-icon{font-size:40px;margin-bottom:10px;opacity:.5}
+hr.div{border:none;border-top:1px solid var(--bg4);margin:16px 0}
+.highlight{color:var(--accent2);font-weight:700}
+.section-label{font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px}
+.leaflet-fixed{pointer-events:none;opacity:.6;font-size:11px;color:var(--green)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:600px){
+  .header-inner{padding:0 14px;gap:8px}.main{padding:16px 12px 80px}
+  .grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}
+  .grid4{grid-template-columns:1fr 1fr}
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  .theme-inner{gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">TZ</div>
+      <div>
+        <div class="logo-text">TOPZONE</div>
+        <div class="logo-sub">Quản Lý Truyền Thông v6</div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="header-date" id="headerDate"></div>
+    </div>
+    <button class="btn-theme-toggle" onclick="toggleThemePanel()">🎨 Màu sắc</button>
+    <div class="sync-pill off" id="syncPill" onclick="goTab('settings')">
+      <span id="syncDot">●</span>
+      <span id="syncText">Shared</span>
+    </div>
+  </div>
+</div>
+
+<!-- THEME PANEL -->
+<div class="theme-panel" id="themePanel">
+  <div class="theme-inner">
+    <div class="theme-group">
+      <span class="theme-label">🌐 Nền</span>
+      <input type="color" class="theme-picker" id="clrBg" value="#0D0D0D" oninput="applyTheme()">
+    </div>
+    <div class="theme-group">
+      <span class="theme-label">✏️ Chữ</span>
+      <input type="color" class="theme-picker" id="clrTxt" value="#FFFFFF" oninput="applyTheme()">
+    </div>
+    <div class="theme-group">
+      <span class="theme-label">📌 Tiêu Đề</span>
+      <input type="color" class="theme-picker" id="clrTitle" value="#FFFFFF" oninput="applyTheme()">
+    </div>
+    <div class="theme-group">
+      <span class="theme-label">🔴 Nhấn</span>
+      <input type="color" class="theme-picker" id="clrAccent" value="#E8321C" oninput="applyTheme()">
+    </div>
+    <div class="theme-group">
+      <span class="theme-label">Preset</span>
+      <div class="theme-presets">
+        <div class="preset-dot active" style="background:#E8321C" title="Đỏ cam (mặc định)" onclick="setPreset('dark-red',this)"></div>
+        <div class="preset-dot" style="background:linear-gradient(135deg,#0D1117,#1565C0)" title="Tối xanh" onclick="setPreset('dark-blue',this)"></div>
+        <div class="preset-dot" style="background:linear-gradient(135deg,#FFFFFF,#E8321C)" title="Sáng đỏ" onclick="setPreset('light-red',this)"></div>
+        <div class="preset-dot" style="background:linear-gradient(135deg,#F5F5F5,#1565C0)" title="Sáng xanh" onclick="setPreset('light-blue',this)"></div>
+        <div class="preset-dot" style="background:linear-gradient(135deg,#0D0D0D,#00C97A)" title="Tối xanh lá" onclick="setPreset('dark-green',this)"></div>
+        <div class="preset-dot" style="background:linear-gradient(135deg,#1A0A2E,#7B2FBE)" title="Tím" onclick="setPreset('purple',this)"></div>
+      </div>
+    </div>
+    <button class="theme-reset" onclick="resetTheme()">↺ Mặc định</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="goTab('report',this)">📝 Báo Cáo</button>
+    <button class="nav-btn" onclick="goTab('history',this)">📋 Lịch Sử</button>
+    <button class="nav-btn" onclick="goTab('analytics',this)">📊 Phân Tích <span class="nav-badge" id="missingBadge" style="display:none">!</span></button>
+    <button class="nav-btn" onclick="goTab('leaderboard',this)">🏆 Xếp Hạng</button>
+    <button class="nav-btn" onclick="goTab('export',this)">💾 Xuất</button>
+    <button class="nav-btn" onclick="goTab('settings',this)">⚙️ Cài Đặt</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- ═══ TAB: BÁO CÁO ═══ -->
+<div class="section active" id="tab-report">
+
+  <div class="shared-banner" id="sharedBanner">
+    <div class="shared-banner-icon">☁️</div>
+    <div class="shared-banner-text">
+      <div class="shared-banner-title">Dữ liệu chia sẻ chung</div>
+      <div class="shared-banner-sub">Mọi nhân viên dùng link này đều thấy dữ liệu chung · Đang tải...</div>
+    </div>
+    <div class="shared-count" id="sharedCount">…</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👤 Nhân Viên</div>
+      <span id="shiftBadge" class="badge badge-gray" style="font-size:10px"></span>
+    </div>
+    <div class="card-body">
+      <div class="section-label">Chọn nhanh</div>
+      <div class="emp-chips" id="empChips"></div>
+      <div class="grid2" style="margin-top:14px">
+        <div>
+          <span class="field-label">Họ và Tên *</span>
+          <input type="text" id="empName" placeholder="Hoặc tự nhập tên...">
+        </div>
+        <div>
+          <span class="field-label">Vị Trí</span>
+          <select id="empRole">
+            <option value="NV">Nhân Viên (NV)</option>
+            <option value="PG">Promoter (PG)</option>
+            <option value="QL">Quản Lý (QL)</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
+          <span class="field-label">Ngày Báo Cáo</span>
+          <input type="date" id="reportDate">
+        </div>
+        <div>
+          <span class="field-label">Ca Làm</span>
+          <select id="empShift">
+            <option value="Sáng (8h-14h)">Ca Sáng (8h–14h)</option>
+            <option value="Chiều (14h-20h)">Ca Chiều (14h–20h)</option>
+            <option value="Tối (17h-22h)">Ca Tối (17h–22h)</option>
+            <option value="Cả ngày">Cả Ngày</option>
+          </select>
+        </div>
+      </div>
+      <span class="field-label">Ghi Chú</span>
+      <textarea id="reportNote" placeholder="Nội dung, khó khăn, đề xuất..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">📱 Hoạt Động Mạng Xã Hội</div></div>
+    <div class="card-body" id="socialActionsWrap"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><div class="card-title">🎪 Hoạt Động Offline / Phát Sinh</div></div>
+    <div class="card-body" id="offlineActionsWrap"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📸 Bằng Chứng + Link Ảnh</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span id="photoIndicator" class="badge badge-gray" style="font-size:10px">0 ảnh</span>
+        <span id="dupIndicator"></span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('photoInput').click()">
+        <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotos(event)" style="display:none">
+        <div class="upload-zone-icon">🖼️</div>
+        <div class="upload-zone-title">Kéo thả hoặc nhấn để chọn ảnh</div>
+        <div class="upload-zone-sub">Chụp màn hình comment, bài đăng, story, TikTok... | Tối đa 20 ảnh, 5MB/ảnh</div>
+      </div>
+      <div class="dup-warning" id="dupWarning"></div>
+      <div class="preview-grid" id="previewGrid"></div>
+      <div id="aiTriggerWrap" style="margin-top:12px;display:none">
+        <button class="btn btn-blue btn-sm" onclick="runSmartAnalysis()" id="btnAI">🔍 Phân Tích Thông Minh – Nhận Diện Hoạt Động</button>
+        <span style="font-size:11px;color:var(--txt3);margin-left:8px">Nhận diện từ tên file · Miễn phí</span>
+      </div>
+      <div class="ai-panel" id="aiPanel" style="display:none">
+        <div class="ai-panel-header">
+          <div class="ai-panel-title">🔍 Kết Quả Nhận Diện</div>
+          <span id="aiStatusBadge" class="badge badge-blue"></span>
+        </div>
+        <div id="aiDetectedSection"></div>
+        <div id="aiVerdictSection"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prog-wrap" id="uploadProgress">
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-label" id="progLabel">Đang lưu...</div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" id="btnSave" onclick="submitReport()">✅ Lưu Báo Cáo</button>
+    <button class="btn btn-ghost btn-sm" onclick="previewReport()">👁 Xem Trước</button>
+    <button class="btn btn-ghost btn-sm" onclick="clearForm()">🗑 Xoá Form</button>
+  </div>
+</div>
+
+<!-- ═══ TAB: LỊCH SỬ ═══ -->
+<div class="section" id="tab-history">
+  <div class="filter-bar">
+    <input type="text" id="filterName" placeholder="Tìm tên NV..." style="width:160px" oninput="renderHistory()">
+    <select id="filterDays" onchange="renderHistory()">
+      <option value="1">Hôm nay</option>
+      <option value="3">3 ngày</option>
+      <option value="7" selected>7 ngày</option>
+      <option value="14">14 ngày</option>
+      <option value="30">30 ngày</option>
+      <option value="0">Tất cả</option>
+    </select>
+    <select id="filterVerdict" onchange="renderHistory()">
+      <option value="">Tất cả</option>
+      <option value="pass">✅ Đúng</option>
+      <option value="fail">❌ Sai</option>
+      <option value="pending">⏳ Chờ</option>
+    </select>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- ═══ TAB: PHÂN TÍCH ═══ -->
+<div class="section" id="tab-analytics">
+
+  <div class="filter-bar">
+    <label>Kỳ:</label>
+    <select id="analyticsDays" onchange="renderAnalytics()">
+      <option value="1">Hôm nay</option>
+      <option value="7" selected>7 ngày (tuần)</option>
+      <option value="14">14 ngày</option>
+      <option value="30">30 ngày (tháng)</option>
+      <option value="90">3 tháng</option>
+      <option value="0">Tất cả</option>
+    </select>
+    <input type="text" id="analyticsName" placeholder="Lọc nhân viên..." style="width:160px" oninput="renderAnalytics()">
+    <button class="btn btn-green btn-sm" onclick="genZaloReport()">📲 Tạo Báo Cáo Zalo</button>
+  </div>
+
+  <!-- KPI SUMMARY -->
+  <div class="stat-grid" id="kpiGrid"></div>
+
+  <!-- ANALYTICS TABS -->
+  <div class="analytics-tabs">
+    <button class="atab active" onclick="switchAtab('overview',this)">📊 Tổng Quan</button>
+    <button class="atab" onclick="switchAtab('daily',this)">📅 Theo Ngày</button>
+    <button class="atab" onclick="switchAtab('weekly',this)">📆 Theo Tuần</button>
+    <button class="atab" onclick="switchAtab('monthly',this)">🗓️ Theo Tháng</button>
+    <button class="atab" onclick="switchAtab('missing',this)">⚠️ Thiếu BC</button>
+    <button class="atab" onclick="switchAtab('activity',this)">🏃 Hoạt Động</button>
+  </div>
+
+  <div id="atab-overview"></div>
+  <div id="atab-daily" style="display:none"></div>
+  <div id="atab-weekly" style="display:none"></div>
+  <div id="atab-monthly" style="display:none"></div>
+  <div id="atab-missing" style="display:none"></div>
+  <div id="atab-activity" style="display:none"></div>
+
+  <!-- ZALO PANEL -->
+  <div id="zaloPanel" style="display:none;margin-top:16px">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📲 Báo Cáo Cuối Ngày (Copy → Zalo/Telegram)</div>
+        <button class="btn btn-ghost btn-xs" onclick="copyZaloReport()">📋 Copy</button>
+      </div>
+      <div class="card-body">
+        <div class="report-preview" id="zaloText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: XẾP HẠNG ═══ -->
+<div class="section" id="tab-leaderboard">
+  <div class="filter-bar">
+    <select id="lbDays" onchange="renderLeaderboard()">
+      <option value="7" selected>7 ngày</option>
+      <option value="14">14 ngày</option>
+      <option value="30">Tháng này</option>
+      <option value="0">Tất cả</option>
+    </select>
+  </div>
+  <div id="lbContent"></div>
+</div>
+
+<!-- ═══ TAB: XUẤT ═══ -->
+<div class="section" id="tab-export">
+  <div class="card">
+    <div class="card-header"><div class="card-title">💾 Xuất Báo Cáo</div></div>
+    <div class="card-body">
+      <div class="grid2">
+        <div><span class="field-label">Từ ngày</span><input type="date" id="exportFrom"></div>
+        <div><span class="field-label">Đến ngày</span><input type="date" id="exportTo"></div>
+      </div>
+      <span class="field-label">Nhân viên</span>
+      <input type="text" id="exportName" placeholder="Để trống = tất cả">
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="exportCSV()">📊 CSV / Excel</button>
+        <button class="btn btn-ghost" onclick="exportJSON()">📄 JSON</button>
+        <button class="btn btn-ghost" onclick="exportPrint()">🖨 In Báo Cáo</button>
+      </div>
+      <hr class="div">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:13px;font-weight:600">Backup / Restore (local)</div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:2px">Lưu file hoặc khôi phục từ file JSON</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup</button>
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer;margin:0">📂 Restore<input type="file" accept=".json" onchange="restoreData(event)" style="display:none"></label>
+        </div>
+      </div>
+      <hr class="div">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div>
+          <span style="font-size:11px;color:var(--txt3)" id="totalRecords"></span>
+          <div style="font-size:11px;color:var(--txt3);margin-top:2px" id="sharedNote"></div>
+        </div>
+        <button class="btn btn-danger" onclick="clearAllData()">🗑 Xoá Toàn Bộ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TAB: CÀI ĐẶT ═══ -->
+<div class="section" id="tab-settings">
+  <!-- JSONBIN SHARED DATA -->
+  <div class="card" style="border-color:rgba(0,201,122,.3)">
+    <div class="card-header">
+      <div class="card-title">☁️ Dữ Liệu Chia Sẻ (JSONBin.io)</div>
+      <span id="jsonbinBadge" class="badge badge-warn">⚠️ Chưa setup</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--txt2);line-height:1.7">Dùng <strong>JSONBin.io</strong> (miễn phí) làm backend. Tất cả nhân viên mở cùng 1 file HTML → dữ liệu tự đồng bộ qua cloud.</p>
+
+      <div style="margin:12px 0;padding:12px 14px;background:rgba(46,139,255,.08);border:1px solid rgba(46,139,255,.2);border-radius:10px;font-size:12px;color:var(--blue);line-height:1.8">
+        <strong>📋 Hướng dẫn setup (1 lần duy nhất, cho Quản Lý):</strong><br>
+        1. Vào <a href="https://jsonbin.io" target="_blank" style="color:var(--blue)">jsonbin.io</a> → Đăng ký miễn phí<br>
+        2. Vào <strong>API Keys</strong> → Copy <strong>Master Key</strong><br>
+        3. Nhấn <strong>Create Bin</strong> → nhập <code style="background:var(--bg4);padding:1px 4px;border-radius:3px">[]</code> → Copy <strong>Bin ID</strong> (phần sau /b/)<br>
+        4. Dán 2 thông tin vào dưới → Lưu → Chia link HTML cho nhân viên
+      </div>
+
+      <div class="setup-step"><div class="step-num">1</div><div class="step-text">Nhập <strong>Master Key</strong> từ JSONBin (bắt đầu bằng $2a$...)</div></div>
+      <span class="field-label">JSONBin Master Key</span>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="jsonbinApiKey" placeholder="$2a$10$...">
+      </div>
+
+      <div class="setup-step" style="margin-top:14px"><div class="step-num">2</div><div class="step-text">Nhập <strong>Bin ID</strong> (chuỗi ký tự sau /b/ trong URL)</div></div>
+      <span class="field-label">Bin ID</span>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="jsonbinBinId" placeholder="64f2a8...">
+        <button class="btn btn-ghost btn-sm" onclick="testJsonbin()">🔌 Test</button>
+        <button class="btn btn-green btn-sm" onclick="saveJsonbin()">Lưu</button>
+      </div>
+      <div id="jsonbinLog" class="drive-log" style="margin-top:8px"><span class="info"># Nhập API Key và Bin ID → Test → Lưu</span></div>
+
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div id="sharedStats" style="font-size:12px;color:var(--txt3)">Chưa đồng bộ</div>
+        <button class="btn btn-ghost btn-xs" onclick="syncFromShared()">🔄 Đồng bộ ngay</button>
+        <button class="btn btn-danger" style="font-size:11px;padding:5px 10px" onclick="clearSharedData()">🗑 Xoá shared data</button>
+      </div>
+
+      <div style="margin-top:12px;padding:10px 14px;background:var(--green-bg);border:1px solid rgba(0,201,122,.2);border-radius:10px;font-size:12px;color:var(--green)">
+        ✅ <strong>Sau khi setup:</strong> Nhân viên chỉ cần mở file HTML (hoặc link GitHub Pages) → dữ liệu tự đồng bộ · Free 10k requests/tháng
+      </div>
+    </div>
+  </div>
+
+  <!-- GITHUB PAGES GUIDE -->
+  <div class="card" style="border-color:rgba(255,184,0,.3)">
+    <div class="card-header">
+      <div class="card-title">🌐 Tạo Link Dùng Chung (GitHub Pages – Free)</div>
+      <span class="badge badge-gold">Miễn Phí</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--txt2);line-height:1.7">Sau khi setup JSONBin, deploy file HTML lên <strong>GitHub Pages</strong> để có 1 link cố định chia sẻ cho toàn bộ nhân viên.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <div class="setup-step"><div class="step-num">1</div><div class="step-text">Vào <a href="https://github.com" target="_blank" style="color:var(--blue)">github.com</a> → Đăng ký tài khoản miễn phí → Tạo <strong>New Repository</strong> tên <code style="background:var(--bg4);padding:1px 5px;border-radius:3px">topzone</code></div></div>
+        <div class="setup-step"><div class="step-num">2</div><div class="step-text">Upload file <strong>topzone_v6.html</strong> → đổi tên thành <strong>index.html</strong></div></div>
+        <div class="setup-step"><div class="step-num">3</div><div class="step-text">Vào <strong>Settings → Pages → Branch: main → Save</strong></div></div>
+        <div class="setup-step"><div class="step-num">4</div><div class="step-text">GitHub tạo link: <strong>https://[username].github.io/topzone/</strong> → Copy chia cho tất cả nhân viên!</div></div>
+      </div>
+      <div style="margin-top:14px;padding:12px 14px;background:rgba(255,184,0,.08);border:1px solid rgba(255,184,0,.2);border-radius:10px;font-size:12px;color:var(--gold);line-height:1.8">
+        ⭐ <strong>Kết quả:</strong> 1 link duy nhất → Mọi nhân viên truy cập → Dữ liệu đồng bộ qua JSONBin → Quản lý xem phân tích tổng hợp theo ngày/tuần/tháng
+      </div>
+    </div>
+  </div>
+
+  <!-- IMGBB -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🖼️ ImgBB – Upload Ảnh Lấy Link</div>
+      <span id="imgbbBadge" class="badge badge-gray">Chưa cài</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--txt2);line-height:1.6">Ảnh sẽ upload lên <strong>ImgBB</strong> (miễn phí) và sinh ra link công khai. Quản lý nhấn link xem ảnh bằng chứng trực tiếp.</p>
+      <div class="setup-step"><div class="step-num">1</div><div class="step-text">Truy cập <a href="https://api.imgbb.com" target="_blank" style="color:var(--blue)">api.imgbb.com</a> → Đăng ký miễn phí → <strong>Get API Key</strong></div></div>
+      <div class="setup-step"><div class="step-num">2</div><div class="step-text">Copy API Key → Dán vào ô dưới → Test → Lưu</div></div>
+      <span class="field-label">ImgBB API Key</span>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="imgbbKey" placeholder="abc123def..." style="font-size:12px">
+        <button class="btn btn-ghost btn-sm" onclick="testImgbb()">🔌 Test</button>
+        <button class="btn btn-green btn-sm" onclick="saveImgbb()">Lưu</button>
+      </div>
+      <div id="imgbbLog" class="drive-log" style="margin-top:8px"><span class="info"># Log ImgBB</span></div>
+    </div>
+  </div>
+
+  <!-- HASH -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🔍 Chống Trùng Ảnh</div>
+      <span class="badge badge-green">Luôn bật</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--txt2);line-height:1.6">Mỗi ảnh được tạo "vân tay" khi upload. Nếu nhân viên dùng lại ảnh cũ, tool phát hiện và cảnh báo đỏ ngay.</p>
+      <div style="margin-top:12px;font-size:12px;color:var(--txt3)">Đã lưu <strong id="hashCountSett" style="color:var(--txt)">0</strong> vân tay ảnh</div>
+      <button class="btn btn-danger" style="margin-top:10px" onclick="clearHashes()">🗑 Xoá dữ liệu vân tay</button>
+    </div>
+  </div>
+
+  <!-- THEME SETTINGS -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">🎨 Giao Diện</div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--txt2);margin-bottom:12px">Nhấn nút <strong>🎨 Màu sắc</strong> trên header để chọn màu Nền / Chữ / Tiêu đề / Nhấn. Theme được lưu tự động cho thiết bị này.</p>
+      <div class="btn-group">
+        <button class="btn btn-ghost btn-sm" onclick="toggleThemePanel()">🎨 Mở Theme Picker</button>
+        <button class="btn btn-ghost btn-sm" onclick="resetTheme()">↺ Reset về mặc định</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL XEM TRƯỚC -->
+<div class="modal-overlay hidden" id="previewModal">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Xem Trước Báo Cáo</span><button class="modal-close" onclick="closeModal()">✕</button></div>
+    <div class="modal-body" id="previewContent"></div>
+  </div>
+</div>
+
+<!-- MODAL PHÓNG ẢNH -->
+<div class="modal-overlay hidden" id="photoModal" onclick="closeModal()">
+  <img id="photoModalImg" style="max-width:90vw;max-height:90vh;border-radius:12px;display:block;box-shadow:var(--sh2)">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  CONFIG – TOPZONE v5 (Shared Storage + Theme + Analytics)
+// ═══════════════════════════════════════════════════
+const EMPLOYEES = [
+  {name:'Nguyễn Thị Thy',role:'NV'},{name:'Lê Văn Nhân',role:'NV'},
+  {name:'Trần Thị Huyền Trang',role:'NV'},{name:'Lê Thị Thanh Trâm',role:'NV'},
+  {name:'Trần Minh Hải',role:'NV'},{name:'Nguyễn Quỳnh Anh',role:'NV'},
+  {name:'Đỗ Nhật Trinh',role:'NV'},{name:'Tạ Đức Hiếu',role:'NV'},
+  {name:'Trần Thị Mỹ Trang',role:'NV'},{name:'Lê Thị Mỹ Linh',role:'NV'},
+  {name:'PG Samsung',role:'PG'},{name:'PG Oppo',role:'PG'},
+  {name:'PG Xiaomi',role:'PG'},{name:'PG Khác',role:'PG'},
+];
+
+const ACTIONS_SOCIAL = [
+  {id:'post',label:'Đăng Bài',icon:'📢',unit:'bài',desc:'Đăng bài lên Facebook/Zalo'},
+  {id:'comment',label:'Comment Dạo',icon:'💬',unit:'comment',desc:'Bình luận trên các bài đăng'},
+  {id:'share',label:'Share Bài',icon:'🔁',unit:'share',desc:'Chia sẻ bài viết'},
+  {id:'inbox_fb',label:'Inbox Facebook',icon:'✉️',unit:'tin',desc:'Nhắn tin qua Facebook Messenger'},
+  {id:'zalo_msg',label:'Zalo Nhắn Tin',icon:'📲',unit:'tin',desc:'Nhắn tin qua Zalo'},
+  {id:'story',label:'Story / Reels',icon:'🟠',unit:'story',desc:'Đăng Story hoặc Reels'},
+  {id:'group_post',label:'Đăng Group',icon:'👥',unit:'bài',desc:'Đăng vào group Facebook'},
+  {id:'review',label:'Reply Review',icon:'⭐',unit:'review',desc:'Trả lời đánh giá khách hàng'},
+];
+const ACTIONS_OFFLINE = [
+  {id:'roadshow',label:'Roadshow',icon:'🚗',unit:'buổi',fixed:false},
+  {id:'leaflet',label:'Tờ Rơi',icon:'📄',unit:'đợt',fixed:true,fixedVal:1,fixedNote:'= 1 hành động/đợt'},
+  {id:'event',label:'Hoạt Náo',icon:'🎉',unit:'buổi',fixed:false},
+  {id:'tiktok',label:'Video TikTok',icon:'🎵',unit:'video',fixed:false},
+  {id:'other',label:'Khác',icon:'➕',unit:'lần',fixed:false},
+];
+const ALL_ACTIONS = [...ACTIONS_SOCIAL,...ACTIONS_OFFLINE];
+
+const KEYWORD_MAP = {
+  post:['post','bai','dang','timeline','fanpage','page','feed'],
+  comment:['comment','cmt','binh','reply'],
+  share:['share','chia'],
+  inbox_fb:['inbox','messenger','msg','message'],
+  zalo_msg:['zalo','oa'],
+  story:['story','reels','reel','tin24'],
+  group_post:['group','nhom','cong dong'],
+  review:['review','rating','danh gia','sao'],
+  roadshow:['roadshow','ngoai troi','standee'],
+  leaflet:['to roi','toroi','flyer','brochure'],
+  tiktok:['tiktok','video','live'],
+  event:['event','hoat nao','su kien'],
+};
+
+// Storage keys
+const LOCAL_KEY     = 'tz_reports_v6';
+const HASH_KEY      = 'tz_hashes_v6';
+const IMGBB_KEY     = 'tz_imgbb_key';
+const THEME_KEY     = 'tz_theme_v6';
+const JSONBIN_KEY   = 'tz_jsonbin_v6';
+
+// JSONBin.io config (set in Cài Đặt)
+let jsonbinCfg = {apiKey:'', binId:''};
+
+// State
+let reports = [];
+let photoHashes = {};
+let imgbbKey = '';
+let currentPhotos = [];
+let aiResult = null;
+let currentAtab = 'overview';
+let isSyncing = false;
+
+// ─── THEME SYSTEM ───
+const PRESETS = {
+  'dark-red':   {bg:'#0D0D0D',bg2:'#161616',bg3:'#1E1E1E',bg4:'#2A2A2A',txt:'#FFFFFF',title:'#FFFFFF',accent:'#E8321C',orange:'#FF7D1A'},
+  'dark-blue':  {bg:'#0D1117',bg2:'#161B22',bg3:'#21262D',bg4:'#30363D',txt:'#E6EDF3',title:'#58A6FF',accent:'#1565C0',orange:'#2E8BFF'},
+  'light-red':  {bg:'#F5F5F5',bg2:'#FFFFFF',bg3:'#FAFAFA',bg4:'#E5E5E5',txt:'#1A1A1A',title:'#B71C1C',accent:'#E8321C',orange:'#FF7D1A'},
+  'light-blue': {bg:'#F0F4FF',bg2:'#FFFFFF',bg3:'#F8FAFF',bg4:'#DCE8FF',txt:'#1A1A2E',title:'#1565C0',accent:'#1565C0',orange:'#2E8BFF'},
+  'dark-green': {bg:'#061A10',bg2:'#0D2016',bg3:'#0D2B1A',bg4:'#1A3D28',txt:'#D1FAE5',title:'#00C97A',accent:'#00A862',orange:'#00C97A'},
+  'purple':     {bg:'#1A0A2E',bg2:'#22103A',bg3:'#2B1A48',bg4:'#3D2560',txt:'#EDE7F6',title:'#CE93D8',accent:'#7B2FBE',orange:'#AB47BC'},
+};
+
+function applyTheme(){
+  const bg=document.getElementById('clrBg').value;
+  const txt=document.getElementById('clrTxt').value;
+  const title=document.getElementById('clrTitle').value;
+  const accent=document.getElementById('clrAccent').value;
+  // Derive secondary colors
+  const bg2=lighten(bg,8);const bg3=lighten(bg,14);const bg4=lighten(bg,20);
+  const accent2=lighten(accent,15);const orange=shiftHue(accent,20);
+  const r=document.documentElement;
+  r.style.setProperty('--bg',bg);r.style.setProperty('--bg2',bg2);
+  r.style.setProperty('--bg3',bg3);r.style.setProperty('--bg4',bg4);
+  r.style.setProperty('--txt',txt);r.style.setProperty('--txt2',alpha(txt,.85));
+  r.style.setProperty('--txt3',alpha(txt,.5));r.style.setProperty('--title',title);
+  r.style.setProperty('--accent',accent);r.style.setProperty('--accent2',accent2);
+  r.style.setProperty('--orange',orange);
+  localStorage.setItem(THEME_KEY,JSON.stringify({bg,txt,title,accent}));
+}
+function applyPresetObj(p){
+  const r=document.documentElement;
+  r.style.setProperty('--bg',p.bg);r.style.setProperty('--bg2',p.bg2);
+  r.style.setProperty('--bg3',p.bg3);r.style.setProperty('--bg4',p.bg4);
+  r.style.setProperty('--txt',p.txt);r.style.setProperty('--txt2',alpha(p.txt,.85));
+  r.style.setProperty('--txt3',alpha(p.txt,.5));r.style.setProperty('--title',p.title);
+  r.style.setProperty('--accent',p.accent);r.style.setProperty('--accent2',lighten(p.accent,15));
+  r.style.setProperty('--orange',p.orange);
+  document.getElementById('clrBg').value=p.bg;
+  document.getElementById('clrTxt').value=p.txt;
+  document.getElementById('clrTitle').value=p.title;
+  document.getElementById('clrAccent').value=p.accent;
+}
+function setPreset(id,el){
+  document.querySelectorAll('.preset-dot').forEach(d=>d.classList.remove('active'));
+  el.classList.add('active');
+  const p=PRESETS[id];if(!p)return;
+  applyPresetObj(p);
+  localStorage.setItem(THEME_KEY,JSON.stringify({preset:id}));
+}
+function resetTheme(){applyPresetObj(PRESETS['dark-red']);document.querySelectorAll('.preset-dot').forEach((d,i)=>{d.classList.toggle('active',i===0)});localStorage.removeItem(THEME_KEY);showToast('↺ Đã reset theme');}
+function loadTheme(){
+  try{
+    const s=localStorage.getItem(THEME_KEY);if(!s)return;
+    const t=JSON.parse(s);
+    if(t.preset&&PRESETS[t.preset]){applyPresetObj(PRESETS[t.preset]);document.querySelectorAll('.preset-dot').forEach(d=>{d.classList.toggle('active',d.getAttribute('onclick')?.includes(t.preset));});}
+    else if(t.bg){document.getElementById('clrBg').value=t.bg;document.getElementById('clrTxt').value=t.txt||'#FFFFFF';document.getElementById('clrTitle').value=t.title||'#FFFFFF';document.getElementById('clrAccent').value=t.accent||'#E8321C';applyTheme();}
+  }catch{}
+}
+function toggleThemePanel(){
+  const p=document.getElementById('themePanel');
+  const isOpen=p.style.display==='block';
+  p.style.display=isOpen?'none':'block';
+  if(!isOpen){p.classList.add('open');}else{p.classList.remove('open');}
+}
+
+// Color helpers
+function hex2rgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return[r,g,b];}
+function rgb2hex(r,g,b){return'#'+[r,g,b].map(x=>Math.max(0,Math.min(255,Math.round(x))).toString(16).padStart(2,'0')).join('');}
+function lighten(hex,pct){const[r,g,b]=hex2rgb(hex);return rgb2hex(r+pct*2,g+pct*2,b+pct*2);}
+function alpha(hex,a){const[r,g,b]=hex2rgb(hex);return`rgba(${r},${g},${b},${a})`;}
+function shiftHue(hex,deg){const[r,g,b]=hex2rgb(hex);return rgb2hex(r+deg*.3,g+deg*.1,b-deg*.1);}
+
+// ─── JSONBIN.IO SHARED STORAGE ───
+// Free tier: 10k reads/writes per month, perfect for small teams
+// Setup: jsonbin.io → Sign up free → Create Bin → Copy API Key + Bin ID
+
+function loadJsonbinCfg(){
+  try{const s=localStorage.getItem(JSONBIN_KEY);if(s){jsonbinCfg=JSON.parse(s);}}catch{}
+}
+function saveJsonbinCfg(){
+  localStorage.setItem(JSONBIN_KEY,JSON.stringify(jsonbinCfg));
+}
+function jsonbinReady(){
+  return !!(jsonbinCfg.apiKey && jsonbinCfg.binId);
+}
+
+async function syncFromShared(){
+  if(!jsonbinReady()){setSyncUI('off');showToast('⚠️ Chưa cấu hình JSONBin. Vào Cài Đặt → Shared Storage');return;}
+  setSyncUI('syncing');
+  try{
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${jsonbinCfg.binId}/latest`,{
+      headers:{'X-Master-Key':jsonbinCfg.apiKey,'X-Bin-Meta':false}
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const shared=Array.isArray(data)?data:(data.reports||[]);
+    if(Array.isArray(shared)&&shared.length>=0){
+      const localMap={};reports.forEach(r=>{localMap[r.id]=r;});
+      const merged=shared.map(sr=>{
+        const lr=localMap[sr.id];
+        if(lr&&lr.photos&&lr.photos.length)return{...sr,photos:lr.photos};
+        return sr;
+      });
+      reports.forEach(lr=>{if(!merged.find(r=>r.id===lr.id))merged.push(lr);});
+      merged.sort((a,b)=>b.id-a.id);
+      reports=merged;save();
+    }
+    setSyncUI('on');updateSharedUI();showToast('✅ Đồng bộ xong');
+  }catch(e){
+    setSyncUI('off');showToast('⚠️ Không thể đồng bộ: '+e.message);
+  }
+}
+
+async function pushToShared(){
+  if(!jsonbinReady()){setSyncUI('off');return;}
+  try{
+    const slim=reports.map(r=>{const{photos,...rest}=r;return{...rest,photoCount:r.photoCount||(photos||[]).length};});
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${jsonbinCfg.binId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':jsonbinCfg.apiKey,'X-Bin-Versioning':false},
+      body:JSON.stringify(slim)
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    setSyncUI('on');
+  }catch(e){
+    setSyncUI('off');console.warn('Push failed:',e);
+  }
+}
+
+async function clearSharedData(){
+  if(!confirm('Xoá toàn bộ dữ liệu SHARED? (Không thể hoàn tác)'))return;
+  if(!jsonbinReady()){showToast('⚠️ Chưa cấu hình JSONBin');return;}
+  try{
+    await fetch(`https://api.jsonbin.io/v3/b/${jsonbinCfg.binId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':jsonbinCfg.apiKey,'X-Bin-Versioning':false},
+      body:JSON.stringify([])
+    });
+    reports=[];save();showToast('🗑 Đã xoá shared data');updateSharedUI();
+  }catch(e){showToast('❌ Lỗi: '+e.message);}
+}
+
+// JSONBin setup functions
+async function testJsonbin(){
+  const k=document.getElementById('jsonbinApiKey').value.trim();
+  const b=document.getElementById('jsonbinBinId').value.trim();
+  const log=document.getElementById('jsonbinLog');
+  if(!k||!b){log.innerHTML='<span class="err">⚠️ Nhập cả API Key và Bin ID</span>';return;}
+  log.innerHTML='<span class="info">⏳ Đang kiểm tra...</span>';
+  try{
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${b}/latest`,{headers:{'X-Master-Key':k,'X-Bin-Meta':false}});
+    if(res.ok){log.innerHTML='<span class="ok">✅ Kết nối thành công! Nhấn Lưu để sử dụng.</span>';}
+    else{log.innerHTML=`<span class="err">❌ Lỗi ${res.status}: Kiểm tra lại API Key và Bin ID</span>`;}
+  }catch(e){log.innerHTML=`<span class="err">❌ Lỗi kết nối: ${e.message}</span>`;}
+}
+
+function saveJsonbin(){
+  const k=document.getElementById('jsonbinApiKey').value.trim();
+  const b=document.getElementById('jsonbinBinId').value.trim();
+  const log=document.getElementById('jsonbinLog');
+  if(!k||!b){log.innerHTML='<span class="err">⚠️ Nhập cả 2 trường</span>';return;}
+  jsonbinCfg={apiKey:k,binId:b};saveJsonbinCfg();
+  log.innerHTML='<span class="ok">✅ Đã lưu! Đang đồng bộ...</span>';
+  updateJsonbinUI();syncFromShared();
+}
+
+function updateJsonbinUI(){
+  const badge=document.getElementById('jsonbinBadge');
+  const ready=jsonbinReady();
+  if(badge){badge.className='badge '+(ready?'badge-green':'badge-warn');badge.textContent=ready?'✅ Đã cấu hình':'⚠️ Chưa setup';}
+  const apiEl=document.getElementById('jsonbinApiKey');const binEl=document.getElementById('jsonbinBinId');
+  if(apiEl&&jsonbinCfg.apiKey)apiEl.value=jsonbinCfg.apiKey;
+  if(binEl&&jsonbinCfg.binId)binEl.value=jsonbinCfg.binId;
+}
+
+function setSyncUI(state){
+  const pill=document.getElementById('syncPill');
+  const dot=document.getElementById('syncDot');
+  const txt=document.getElementById('syncText');
+  if(!pill)return;
+  if(state==='on'){pill.className='sync-pill on';dot.textContent='●';txt.textContent='Shared ✓';}
+  else if(state==='syncing'){pill.className='sync-pill syncing';dot.innerHTML='<span class="spinner"></span>';txt.textContent='Syncing...';}
+  else{pill.className='sync-pill off';dot.textContent='●';txt.textContent=jsonbinReady()?'Offline':'Chưa setup';}
+}
+
+function updateSharedUI(){
+  const el=document.getElementById('sharedNote');
+  const el2=document.getElementById('sharedStats');
+  const el3=document.getElementById('sharedCount');
+  const msg=`☁️ ${reports.length} báo cáo · Shared với tất cả NV`;
+  if(el)el.textContent=msg;
+  if(el2)el2.textContent=`${reports.length} báo cáo trong shared storage`;
+  if(el3)el3.textContent=reports.length;
+  const sub=document.querySelector('.shared-banner-sub');
+  if(sub)sub.textContent='Dữ liệu chung cho tất cả nhân viên · Tự động cập nhật';
+  const missing=getMissingToday();
+  const badge=document.getElementById('missingBadge');
+  if(badge){badge.style.display=missing.length?'inline':'none';badge.textContent=missing.length;}
+}
+function load(){
+  try{reports=JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');}catch{reports=[];}
+  try{photoHashes=JSON.parse(localStorage.getItem(HASH_KEY)||'{}');}catch{photoHashes={};}
+  imgbbKey=localStorage.getItem(IMGBB_KEY)||'';
+  loadJsonbinCfg();
+}
+function save(){
+  localStorage.setItem(LOCAL_KEY,JSON.stringify(reports));
+  localStorage.setItem(HASH_KEY,JSON.stringify(photoHashes));
+  updateMeta();
+}
+
+// ─── INIT ───
+load();
+window.addEventListener('load',async()=>{
+  loadTheme();
+  const now=new Date();
+  document.getElementById('reportDate').value=now.toISOString().split('T')[0];
+  document.getElementById('headerDate').textContent=now.toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const m=new Date();m.setDate(1);
+  document.getElementById('exportFrom').value=m.toISOString().split('T')[0];
+  document.getElementById('exportTo').value=now.toISOString().split('T')[0];
+  buildEmpChips();buildActions();updateMeta();updateImgbbUI();updateJsonbinUI();
+  const h=now.getHours();
+  const sb=document.getElementById('shiftBadge');
+  if(sb){sb.textContent=h<14?'Ca Sáng':h<20?'Ca Chiều':'Ca Tối';sb.className='badge '+(h<14?'badge-gold':h<20?'badge-blue':'badge-red');}
+  // Sync from shared if configured
+  if(jsonbinReady()){await syncFromShared();}else{setSyncUI('off');updateSharedUI();showToast('💡 Vào Cài Đặt → cấu hình JSONBin để dùng chung');}
+});
+
+// ─── EMP CHIPS ───
+function buildEmpChips(){
+  const wrap=document.getElementById('empChips');
+  EMPLOYEES.filter(e=>e.role==='NV').forEach(e=>wrap.appendChild(mkChip(e)));
+  const sep=document.createElement('div');sep.className='emp-sep';sep.textContent='Promoter';wrap.appendChild(sep);
+  EMPLOYEES.filter(e=>e.role==='PG').forEach(e=>wrap.appendChild(mkChip(e)));
+}
+function mkChip(e){
+  const c=document.createElement('div');c.className='emp-chip'+(e.role==='PG'?' pg':'');
+  c.textContent=e.name.split(' ').slice(-2).join(' ');c.title=e.name;
+  c.onclick=()=>{document.querySelectorAll('.emp-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');document.getElementById('empName').value=e.name;document.getElementById('empRole').value=e.role;};
+  return c;
+}
+
+// ─── ACTIONS ───
+function buildActions(){buildActionGroup('socialActionsWrap',ACTIONS_SOCIAL);buildActionGroup('offlineActionsWrap',ACTIONS_OFFLINE);}
+function buildActionGroup(cid,actions){
+  const el=document.getElementById(cid);el.innerHTML='';
+  actions.forEach(a=>{
+    const row=document.createElement('div');row.className='action-row';row.id='arow_'+a.id;
+    const isFixed=a.fixed;
+    row.innerHTML=`<span class="action-icon">${a.icon}</span><span class="action-label">${a.label}</span>
+      ${isFixed?`<span class="leaflet-fixed badge badge-green" style="font-size:10px">${a.fixedNote}</span>`:`<span class="action-unit" id="aunit_${a.id}"></span>`}
+      <div class="action-count-wrap">
+        ${isFixed?`<span class="badge badge-green">✓ 1 hành động</span>`:`
+        <button class="count-btn" onclick="adjustCount('${a.id}',-1)" tabindex="-1">−</button>
+        <input type="number" class="count-input" id="cnt_${a.id}" value="0" min="0" max="9999" oninput="syncCount('${a.id}')">
+        <button class="count-btn" onclick="adjustCount('${a.id}',1)" tabindex="-1">+</button>`}
+      </div>`;
+    if(!isFixed)row.onclick=(ev)=>{if(!ev.target.classList.contains('count-btn')&&ev.target.id!=='cnt_'+a.id)toggleAction(a.id);};
+    else row.onclick=()=>toggleAction(a.id);
+    el.appendChild(row);
+    if(!isFixed){const u=document.getElementById('aunit_'+a.id);if(u)u.textContent=a.unit;}
+  });
+}
+function toggleAction(id){
+  const row=document.getElementById('arow_'+id);const a=ALL_ACTIONS.find(x=>x.id===id);if(!a)return;
+  if(a.fixed){row.classList.toggle('selected');return;}
+  const cnt=document.getElementById('cnt_'+id);const isSel=row.classList.contains('selected');
+  if(isSel){row.classList.remove('selected');cnt.value=0;}else{row.classList.add('selected');if(!parseInt(cnt.value))cnt.value=1;}
+}
+function adjustCount(id,delta){const cnt=document.getElementById('cnt_'+id);cnt.value=Math.max(0,(parseInt(cnt.value)||0)+delta);syncCount(id);}
+function syncCount(id){const cnt=document.getElementById('cnt_'+id);const row=document.getElementById('arow_'+id);if(parseInt(cnt.value)>0)row.classList.add('selected');else row.classList.remove('selected');}
+function getActions(){
+  const out={};
+  ALL_ACTIONS.forEach(a=>{
+    const row=document.getElementById('arow_'+a.id);if(!row||!row.classList.contains('selected'))return;
+    if(a.fixed){out[a.id]=a.fixedVal||1;}else{const v=parseInt(document.getElementById('cnt_'+a.id)?.value)||0;if(v>0)out[a.id]=v;}
+  });
+  return out;
+}
+
+// ─── PHOTO ───
+const uploadZone=document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.style.borderColor='var(--accent)';});
+uploadZone.addEventListener('dragleave',()=>{uploadZone.style.borderColor='';});
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.style.borderColor='';const dt=e.dataTransfer;if(dt.files)handlePhotos({target:{files:dt.files}});});
+
+async function handlePhotos(e){
+  const files=Array.from(e.target.files||[]).slice(0,20-currentPhotos.length);
+  const dups=[];
+  for(const f of files){
+    if(f.size>5*1024*1024){showToast('⚠️ '+f.name+' vượt 5MB');continue;}
+    await new Promise(res=>{
+      const r=new FileReader();
+      r.onload=async ev=>{
+        const dataUrl=ev.target.result;const hash=simHash(dataUrl);const isDup=!!photoHashes[hash];
+        currentPhotos.push({dataUrl,name:f.name,hash,isDup,dupInfo:isDup?photoHashes[hash]:null,aiLabel:null,imgbbLink:null});
+        if(isDup)dups.push({name:f.name,dupInfo:photoHashes[hash]});res();
+      };r.readAsDataURL(f);
+    });
+  }
+  renderPreviews();updatePhotoIndicator(dups);
+  if(currentPhotos.length>0){document.getElementById('aiTriggerWrap').style.display='block';document.getElementById('aiPanel').style.display='none';aiResult=null;}
+  if(e.target)e.target.value='';
+}
+function simHash(d){const s=d.slice(22,1022)+d.slice(-300);let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return'h'+Math.abs(h).toString(36);}
+function renderPreviews(){
+  const g=document.getElementById('previewGrid');g.innerHTML='';
+  currentPhotos.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='preview-item';
+    const linkBtn=p.imgbbLink?`<div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0,rgba(0,180,0,.9),transparent);text-align:center;padding:3px;font-size:9px;font-weight:700"><a href="${p.imgbbLink}" target="_blank" style="color:#fff;text-decoration:none">🔗 Link</a></div>`:'';
+    d.innerHTML=`<img src="${p.dataUrl}" alt="${p.name}" onclick="zoom('${p.dataUrl}')"><button class="preview-del" onclick="removePhoto(${i},event)">✕</button>${p.isDup?'<div class="dup-ribbon">⚠️ TRÙNG</div>':''}${p.aiLabel?`<div class="ai-ribbon">${ALL_ACTIONS.find(a=>a.id===p.aiLabel)?.icon||'🔍'} ${p.aiLabel}</div>`:''} ${linkBtn}`;
+    g.appendChild(d);
+  });
+}
+function removePhoto(i,e){if(e)e.stopPropagation();currentPhotos.splice(i,1);renderPreviews();updatePhotoIndicator([]);if(!currentPhotos.length){document.getElementById('aiTriggerWrap').style.display='none';document.getElementById('aiPanel').style.display='none';}}
+function zoom(src){document.getElementById('photoModalImg').src=src;document.getElementById('photoModal').classList.remove('hidden');}
+function updatePhotoIndicator(dups){
+  const ind=document.getElementById('photoIndicator');ind.textContent=currentPhotos.length+' ảnh';ind.className='badge '+(currentPhotos.length?'badge-blue':'badge-gray');
+  const dupEl=document.getElementById('dupIndicator');const dupWarn=document.getElementById('dupWarning');
+  if(dups.length){
+    dupEl.innerHTML=`<span class="badge badge-warn">⚠️ ${dups.length} ảnh trùng</span>`;
+    dupWarn.innerHTML=dups.map(d=>`⚠️ <strong>${d.name}</strong> đã dùng ngày ${d.dupInfo?.date||'trước'} (${d.dupInfo?.empName||''})`).join('<br>');
+    dupWarn.classList.add('show');
+  }else{dupEl.innerHTML='';if(!currentPhotos.filter(p=>p.isDup).length)dupWarn.classList.remove('show');}
+}
+
+// ─── SMART ANALYSIS ───
+function runSmartAnalysis(){
+  if(!currentPhotos.length){showToast('⚠️ Chưa có ảnh');return;}
+  const panel=document.getElementById('aiPanel');panel.style.display='block';
+  document.getElementById('aiStatusBadge').innerHTML='<span class="badge badge-green">✅ Hoàn tất</span>';
+  const detected={};
+  currentPhotos.forEach((p,i)=>{
+    const fn=(p.name||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    let found=null;for(const[id,kws]of Object.entries(KEYWORD_MAP)){if(kws.some(kw=>fn.includes(kw))){found=id;break;}}
+    if(!found)found='other';currentPhotos[i].aiLabel=found;detected[found]=(detected[found]||0)+1;
+  });
+  renderPreviews();
+  const detSec=document.getElementById('aiDetectedSection');
+  let html='<div class="ai-detected-badges">';
+  Object.entries(detected).filter(([k,v])=>v>0&&k!=='other').forEach(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);if(a)html+=`<span class="badge badge-blue">${a.icon} ${a.label} ×${v}</span>`;});
+  html+='</div>';detSec.innerHTML=html;
+  const declared=getActions();let match=0,mismatch=0,details=[];
+  ALL_ACTIONS.forEach(a=>{const d=declared[a.id]||0;const ai=detected[a.id]||0;if(d>0||ai>0){const ok=d>0&&ai>0;if(ok)match++;else mismatch++;details.push({a,d,ai,ok});}});
+  const total=match+mismatch;let verdict,cls;
+  if(total===0){verdict='⚠️ Không đủ dữ liệu tên file';cls='warn';}
+  else if(mismatch===0){verdict=`✅ Tên file khớp – ${match}/${total} loại có bằng chứng.`;cls='pass';}
+  else if(match===0){verdict=`❌ Tên file không khớp với ${mismatch} loại NV đã khai.`;cls='fail';}
+  else{verdict=`⚠️ Một phần khớp – ${match} đúng, ${mismatch} cần kiểm tra.`;cls='warn';}
+  let detHtml=details.map(({a,d,ai,ok})=>`<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bg4);font-size:11px"><span>${ok?'✅':d>0&&ai===0?'❓':'➕'}</span><span>${a.icon} ${a.label}</span><span style="flex:1;color:var(--txt3)">${ok?'Khớp':d>0&&ai===0?`NV khai ${d}${a.unit} nhưng không thấy`:ai>0&&d===0?'Thấy trong file nhưng chưa khai':''}</span><span style="color:var(--txt3)">NV:${d} File:${ai}</span></div>`).join('');
+  document.getElementById('aiVerdictSection').innerHTML=`<div class="ai-verdict ${cls}"><div>${verdict}</div>${detHtml?`<div style="width:100%">${detHtml}</div>`:''}</div>`;
+  aiResult={_verdict:cls,_verdictText:verdict,summary:detected};
+}
+
+// ─── IMGBB ───
+async function uploadToImgbb(dataUrl){
+  if(!imgbbKey)return null;
+  try{const b64=dataUrl.split(',')[1];const fd=new FormData();fd.append('key',imgbbKey);fd.append('image',b64);const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});const j=await r.json();return j.success?j.data.url:null;}catch{return null;}
+}
+async function testImgbb(){
+  const k=document.getElementById('imgbbKey').value.trim();if(!k){showToast('⚠️ Nhập API Key');return;}
+  const log=document.getElementById('imgbbLog');log.innerHTML='<span class="info"># Đang test ImgBB...</span>';
+  const tiny='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwADhQGAWjR9awAAAABJRU5ErkJggg==';
+  try{const b64=tiny.split(',')[1];const fd=new FormData();fd.append('key',k);fd.append('image',b64);const r=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});const j=await r.json();if(j.success){log.innerHTML=`<span class="ok">✅ ImgBB OK! <a href="${j.data.url}" target="_blank" style="color:var(--blue)">${j.data.url}</a></span>`;showToast('✅ ImgBB hoạt động!');}else{log.innerHTML=`<span class="err">❌ ${JSON.stringify(j.error)}</span>`;}}catch(e){log.innerHTML=`<span class="err">❌ ${e.message}</span>`;}
+}
+function saveImgbb(){const k=document.getElementById('imgbbKey').value.trim();if(!k){showToast('⚠️ Nhập API Key');return;}imgbbKey=k;localStorage.setItem(IMGBB_KEY,k);updateImgbbUI();showToast('✅ Đã lưu ImgBB Key');}
+function updateImgbbUI(){const badge=document.getElementById('imgbbBadge');if(imgbbKey){badge.textContent='✅ Đã cài';badge.className='badge badge-green';document.getElementById('imgbbKey').value=imgbbKey;}else{badge.textContent='Chưa cài';badge.className='badge badge-gray';}}
+
+// ─── SUBMIT ───
+async function submitReport(){
+  const name=document.getElementById('empName').value.trim();if(!name){showToast('⚠️ Nhập tên nhân viên');return;}
+  const date=document.getElementById('reportDate').value;if(!date){showToast('⚠️ Chọn ngày');return;}
+  const dupPhotos=currentPhotos.filter(p=>p.isDup);
+  if(dupPhotos.length&&!confirm(`⚠️ ${dupPhotos.length} ảnh trùng. Vẫn lưu?`))return;
+  const actions=getActions();const total=Object.values(actions).reduce((a,b)=>a+b,0);
+  if(total===0&&!currentPhotos.length&&!confirm('Báo cáo trống. Vẫn lưu?'))return;
+  const btn=document.getElementById('btnSave');btn.disabled=true;btn.textContent='⏳ Đang lưu...';
+  currentPhotos.forEach(p=>{if(!p.isDup)photoHashes[p.hash]={date,empName:name,reportId:Date.now()};});
+  const imgbbLinks=[];
+  if(imgbbKey&&currentPhotos.length){
+    btn.textContent='⏳ Upload ảnh...';
+    const prog=document.getElementById('uploadProgress');const fill=document.getElementById('progFill');const lbl=document.getElementById('progLabel');
+    prog.classList.add('show');
+    for(let i=0;i<currentPhotos.length;i++){fill.style.width=Math.round((i+1)/currentPhotos.length*90)+'%';lbl.textContent=`Upload ảnh ${i+1}/${currentPhotos.length}...`;const link=await uploadToImgbb(currentPhotos[i].dataUrl);if(link){imgbbLinks.push(link);currentPhotos[i].imgbbLink=link;}}
+    fill.style.width='100%';lbl.textContent='✅ Upload xong!';renderPreviews();setTimeout(()=>{prog.classList.remove('show');fill.style.width='0%';},2000);
+  }
+  const report={
+    id:Date.now(),name,role:document.getElementById('empRole').value,
+    shift:document.getElementById('empShift').value,date,
+    note:document.getElementById('reportNote').value.trim(),
+    actions,totalActions:total,
+    photos:currentPhotos.map(p=>({dataUrl:p.dataUrl,name:p.name,hash:p.hash,aiLabel:p.aiLabel||null,imgbbLink:p.imgbbLink||null})),
+    photoCount:currentPhotos.length,imgbbLinks,
+    aiVerdict:aiResult?aiResult._verdict:'pending',aiVerdictText:aiResult?aiResult._verdictText:'',
+    createdAt:new Date().toISOString(),
+  };
+  reports.unshift(report);save();
+  btn.textContent='⏳ Đồng bộ...';
+  await pushToShared();
+  btn.disabled=false;btn.textContent='✅ Lưu Báo Cáo';
+  showToast('✅ Đã lưu'+(imgbbLinks.length?' + '+imgbbLinks.length+' link ảnh':'')+' · Shared');
+  clearForm();updateSharedUI();
+}
+
+function clearForm(){
+  document.getElementById('empName').value='';document.getElementById('reportNote').value='';
+  document.getElementById('reportDate').value=new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.emp-chip').forEach(c=>c.classList.remove('active'));
+  ALL_ACTIONS.forEach(a=>{const row=document.getElementById('arow_'+a.id);if(row)row.classList.remove('selected');const cnt=document.getElementById('cnt_'+a.id);if(cnt)cnt.value=0;});
+  currentPhotos=[];aiResult=null;renderPreviews();
+  ['photoIndicator','dupIndicator','previewGrid','aiTriggerWrap','aiPanel','uploadProgress'].forEach(id=>{const el=document.getElementById(id);if(el){if(id==='photoIndicator'){el.textContent='0 ảnh';el.className='badge badge-gray';}else if(id==='dupIndicator')el.innerHTML='';else if(id==='previewGrid')el.innerHTML='';else el.style.display='none';}});
+  document.getElementById('dupWarning').classList.remove('show');
+  document.getElementById('progFill').style.width='0%';
+}
+
+// ─── PREVIEW ───
+function previewReport(){
+  const name=document.getElementById('empName').value.trim()||'(Chưa nhập)';
+  const date=document.getElementById('reportDate').value;const actions=getActions();const total=Object.values(actions).reduce((a,b)=>a+b,0);
+  let html=`<div style="font-size:13px;line-height:1.7"><div><strong>Nhân viên:</strong> ${name} · ${document.getElementById('empRole').value}</div><div><strong>Ngày:</strong> ${date} · ${document.getElementById('empShift').value}</div><div style="margin-top:10px;font-weight:700;font-size:12px;color:var(--txt3)">HOẠT ĐỘNG</div>`;
+  Object.entries(actions).forEach(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);if(a)html+=`<div>${a.icon} ${a.label}: <strong>${v} ${a.unit}</strong></div>`;});
+  html+=`<div style="margin-top:6px;font-weight:700">Tổng: ${total} hành động</div><div style="margin-top:10px;font-size:12px;color:var(--txt3)">📸 ${currentPhotos.length} ảnh</div>`;
+  const note=document.getElementById('reportNote').value;if(note)html+=`<div style="margin-top:8px;font-size:12px"><strong>Ghi chú:</strong> ${note}</div>`;
+  html+='</div>';
+  document.getElementById('previewContent').innerHTML=html;document.getElementById('previewModal').classList.remove('hidden');
+}
+
+// ─── HISTORY ───
+function renderHistory(){
+  const days=parseInt(document.getElementById('filterDays').value||7);
+  const nf=(document.getElementById('filterName')?.value||'').toLowerCase();
+  const vf=document.getElementById('filterVerdict')?.value||'';
+  const now=Date.now();
+  const filtered=reports.filter(r=>{
+    if(nf&&!r.name.toLowerCase().includes(nf))return false;
+    if(vf&&r.aiVerdict!==vf)return false;
+    if(days>0){const d=new Date(r.date);if((now-d.getTime())/86400000>days)return false;}
+    return true;
+  });
+  const list=document.getElementById('historyList');
+  if(!filtered.length){list.innerHTML='<div class="empty"><div class="empty-icon">📋</div>Chưa có báo cáo</div>';return;}
+  list.innerHTML=filtered.map(r=>{
+    const total=Object.values(r.actions||{}).reduce((a,b)=>a+b,0);
+    const acts=Object.entries(r.actions||{}).map(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);return a?`<span class="badge badge-gray" style="font-size:10px">${a.icon}${v}${a.unit}</span>`:''}).join(' ');
+    const vc=r.aiVerdict==='pass'?'verdict-pass':r.aiVerdict==='fail'?'verdict-fail':'verdict-pending';
+    const vt=r.aiVerdict==='pass'?'✅ Đúng':r.aiVerdict==='fail'?'❌ Sai':'⏳ Chờ';
+    let photosHtml='';
+    if(r.photos&&r.photos.length)photosHtml='<div class="log-photos-row">'+r.photos.slice(0,8).map(p=>p.dataUrl?`<img class="log-photo" src="${p.dataUrl}" onclick="zoom('${p.dataUrl}')">`:`<a href="${p.imgbbLink||'#'}" target="_blank"><img class="log-photo" src="${p.imgbbLink||''}" alt="ảnh"></a>`).join('')+'</div>';
+    let linksHtml='';
+    if(r.imgbbLinks&&r.imgbbLinks.length)linksHtml='<div style="margin:4px 0;display:flex;flex-wrap:wrap;gap:4px">'+r.imgbbLinks.map((l,i)=>`<a href="${l}" target="_blank" class="badge badge-blue" style="font-size:10px">🔗 Ảnh ${i+1}</a>`).join('')+'</div>';
+    return `<div class="log-item"><div class="log-head"><div class="log-name">${r.name}</div><span class="badge badge-gray" style="font-size:10px">${r.role||'NV'}</span><span class="badge badge-gray" style="font-size:10px">${r.shift||'—'}</span><div class="log-date">${r.date?new Date(r.date+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'}):'—'}</div></div><div class="log-actions">${acts||'<span style="font-size:12px;color:var(--txt3)">Không có hoạt động</span>'}</div>${photosHtml}${linksHtml}<div class="log-foot"><div style="font-size:12px;color:var(--txt3)">Tổng: <strong style="color:var(--txt)">${total}</strong> hành động · ${r.photoCount||0} ảnh</div><span class="verdict-mini ${vc}">${vt}</span></div></div>`;
+  }).join('');
+}
+
+// ─── ANALYTICS ───
+let currentAnalyticsData = { filtered:[], days:7, empMap:{}, actTotals:{}, dailyMap:{} };
+
+function getFilteredReports(days, nameFilter){
+  const nf=(nameFilter||'').toLowerCase();const now=Date.now();
+  return reports.filter(r=>{
+    if(nf&&!r.name.toLowerCase().includes(nf))return false;
+    if(days>0){const d=new Date(r.date);if((now-d.getTime())/86400000>days)return false;}
+    return true;
+  });
+}
+
+function renderAnalytics(){
+  const days=parseInt(document.getElementById('analyticsDays')?.value||7);
+  const nf=document.getElementById('analyticsName')?.value||'';
+  const filtered=getFilteredReports(days,nf);
+  // Build maps
+  const empMap={};const actTotals={};const dailyMap={};
+  ALL_ACTIONS.forEach(a=>actTotals[a.id]=0);
+  filtered.forEach(r=>{
+    if(!empMap[r.name])empMap[r.name]={name:r.name,role:r.role||'NV',total:0,days:new Set(),photos:0,pass:0,rpts:0,links:0,actions:{}};
+    const total=Object.values(r.actions||{}).reduce((a,b)=>a+b,0);
+    empMap[r.name].total+=total;empMap[r.name].days.add(r.date);empMap[r.name].photos+=r.photoCount||0;
+    empMap[r.name].rpts++;empMap[r.name].links+=(r.imgbbLinks||[]).length;
+    if(r.aiVerdict==='pass')empMap[r.name].pass++;
+    Object.entries(r.actions||{}).forEach(([k,v])=>{actTotals[k]=(actTotals[k]||0)+v;empMap[r.name].actions[k]=(empMap[r.name].actions[k]||0)+v;});
+    if(!dailyMap[r.date])dailyMap[r.date]={date:r.date,count:0,total:0,names:new Set()};
+    dailyMap[r.date].count++;dailyMap[r.date].total+=total;dailyMap[r.date].names.add(r.name);
+  });
+  currentAnalyticsData={filtered,days,empMap,actTotals,dailyMap};
+  // KPI
+  const total=filtered.reduce((s,r)=>s+Object.values(r.actions||{}).reduce((a,b)=>a+b,0),0);
+  const photos=filtered.reduce((s,r)=>s+(r.photoCount||0),0);
+  const pass=filtered.filter(r=>r.aiVerdict==='pass').length;
+  const uniqueEmps=Object.keys(empMap).length;
+  const missing=getMissingForPeriod(days);
+  document.getElementById('kpiGrid').innerHTML=`
+    <div class="stat-box"><div class="stat-num accent">${filtered.length}</div><div class="stat-lbl">📋 Báo cáo</div></div>
+    <div class="stat-box"><div class="stat-num">${total}</div><div class="stat-lbl">🏃 Hành động</div></div>
+    <div class="stat-box"><div class="stat-num">${photos}</div><div class="stat-lbl">📸 Ảnh</div></div>
+    <div class="stat-box"><div class="stat-num">${uniqueEmps}</div><div class="stat-lbl">👥 NV hoạt động</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--green)">${pass}</div><div class="stat-lbl">✅ Đúng</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--warn)">${missing.length}</div><div class="stat-lbl">⚠️ Thiếu BC</div></div>
+  `;
+  // Missing badge
+  const badge=document.getElementById('missingBadge');
+  if(badge){badge.style.display=missing.length?'inline':'none';badge.textContent=missing.length;}
+  renderAtab(currentAtab);
+}
+
+function switchAtab(id,btn){
+  document.querySelectorAll('.atab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['overview','daily','weekly','monthly','missing','activity'].forEach(t=>{
+    const el=document.getElementById('atab-'+t);if(el)el.style.display=t===id?'block':'none';
+  });
+  currentAtab=id;
+  renderAtab(id);
+}
+
+function renderAtab(id){
+  if(id==='overview')renderAtabOverview();
+  else if(id==='daily')renderAtabDaily();
+  else if(id==='weekly')renderAtabWeekly();
+  else if(id==='monthly')renderAtabMonthly();
+  else if(id==='missing')renderAtabMissing();
+  else if(id==='activity')renderAtabActivity();
+}
+
+function renderAtabOverview(){
+  const{filtered,empMap,actTotals}=currentAnalyticsData;
+  const maxAct=Math.max(...Object.values(actTotals),1);
+  let html='<div class="card"><div class="card-header"><div class="card-title">📊 Phân Loại Hoạt Động</div></div><div class="card-body">';
+  ALL_ACTIONS.forEach(a=>{const v=actTotals[a.id];if(v>0)html+=`<div class="bar-row"><div class="bar-label">${a.icon} ${a.label}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxAct*100)}%"></div></div><div class="bar-val">${v}</div></div>`;});
+  if(!Object.values(actTotals).some(v=>v>0))html+='<div class="empty" style="padding:20px">Chưa có dữ liệu</div>';
+  html+='</div></div>';
+  if(Object.keys(empMap).length){
+    html+='<div class="card"><div class="card-header"><div class="card-title">👥 Hoạt Động Theo Nhân Viên</div></div><div class="card-body">';
+    const maxTotal=Math.max(...Object.values(empMap).map(e=>e.total),1);
+    Object.values(empMap).sort((a,b)=>b.total-a.total).forEach(e=>{
+      html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bg4)">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--orange));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;flex-shrink:0;font-family:Syne,sans-serif">${e.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+          <div style="font-size:11px;color:var(--txt3)">${e.role} · ${e.days.size} ngày · ${e.rpts} bc · ${e.photos} ảnh${e.pass?' · ✅'+e.pass:''}</div>
+          <div class="bar-track" style="margin-top:4px;height:4px"><div class="bar-fill" style="width:${Math.round(e.total/maxTotal*100)}%"></div></div>
+        </div>
+        <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:var(--accent2)">${e.total}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  }
+  document.getElementById('atab-overview').innerHTML=html;
+}
+
+function getMissingForPeriod(days){
+  const now=Date.now();const missing=[];
+  const allNVNames=EMPLOYEES.filter(e=>e.role==='NV').map(e=>e.name);
+  // Check who has 0 reports in the period
+  const activePeriod=new Set(getFilteredReports(days,'').map(r=>r.name));
+  allNVNames.forEach(name=>{if(!activePeriod.has(name))missing.push({name,days:0,lastReport:null});});
+  return missing;
+}
+
+function getMissingToday(){
+  const today=new Date().toISOString().split('T')[0];
+  const todayNames=new Set(reports.filter(r=>r.date===today).map(r=>r.name));
+  return EMPLOYEES.filter(e=>e.role==='NV'&&!todayNames.has(e.name));
+}
+
+function renderAtabMissing(){
+  const{days}=currentAnalyticsData;
+  const missing=getMissingForPeriod(days);
+  const today=new Date().toISOString().split('T')[0];
+  const todayMissing=getMissingToday();
+  let html='';
+  // Today missing
+  html+=`<div class="card"><div class="card-header"><div class="card-title">🚨 Chưa Báo Cáo Hôm Nay (${today})</div><span class="badge ${todayMissing.length?'badge-warn':'badge-green'}">${todayMissing.length?todayMissing.length+' NV':'✅ Đủ'}</span></div><div class="card-body">`;
+  if(!todayMissing.length){html+='<div style="color:var(--green);font-size:13px">✅ Tất cả nhân viên đã báo cáo hôm nay!</div>';}
+  else{html+='<div class="missing-list">'+todayMissing.map(e=>`<div class="missing-item"><div class="missing-avatar">${e.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase()}</div><div class="missing-name">${e.name}</div><span class="badge badge-warn">Chưa BC hôm nay</span></div>`).join('')+'</div>';}
+  html+='</div></div>';
+  // Period missing
+  html+=`<div class="card"><div class="card-header"><div class="card-title">⚠️ Không Có BC Trong ${days} Ngày Qua</div><span class="badge ${missing.length?'badge-warn':'badge-green'}">${missing.length?missing.length+' NV':'✅ Đủ'}</span></div><div class="card-body">`;
+  if(!missing.length){html+='<div style="color:var(--green);font-size:13px">✅ Tất cả nhân viên có báo cáo trong kỳ!</div>';}
+  else{html+='<div class="missing-list">'+missing.map(m=>`<div class="missing-item"><div class="missing-avatar">${m.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase()}</div><div class="missing-name">${m.name}</div><span class="badge badge-warn">Không có BC</span></div>`).join('')+'</div>';}
+  html+='</div></div>';
+  // Attendance table
+  html+=`<div class="card"><div class="card-header"><div class="card-title">📅 Bảng Chấm BC Theo Ngày</div></div><div class="card-body" style="overflow-x:auto">`;
+  const dates=[...new Set(getFilteredReports(days,'').map(r=>r.date))].sort().reverse().slice(0,7);
+  if(dates.length){
+    html+='<table class="period-table"><thead><tr><th>Nhân Viên</th>'+dates.map(d=>`<th>${new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'})}</th>`).join('')+'</tr></thead><tbody>';
+    EMPLOYEES.filter(e=>e.role==='NV').forEach(emp=>{
+      const empReports={};getFilteredReports(days,'').filter(r=>r.name===emp.name).forEach(r=>empReports[r.date]=r);
+      html+=`<tr><td style="font-weight:600;font-size:12px">${emp.name.split(' ').slice(-2).join(' ')}</td>`+dates.map(d=>{const r=empReports[d];return r?`<td><span class="present-dot"></span><span style="font-size:11px;color:var(--green)">${Object.values(r.actions||{}).reduce((a,b)=>a+b,0)}HĐ</span></td>`:`<td><span class="missing-dot"></span><span style="font-size:11px;color:var(--txt3)">—</span></td>`;}).join('')+'</tr>';
+    });
+    html+='</tbody></table>';
+  }else html+='<div class="empty" style="padding:16px">Chưa có dữ liệu</div>';
+  html+='</div></div>';
+  document.getElementById('atab-missing').innerHTML=html;
+}
+
+function renderAtabActivity(){
+  const{empMap,actTotals,days}=currentAnalyticsData;
+  // Top performers per action
+  let html='<div class="card"><div class="card-header"><div class="card-title">🏅 Top Hoạt Động Từng Loại</div></div><div class="card-body">';
+  ALL_ACTIONS.forEach(a=>{
+    const top=Object.values(empMap).filter(e=>e.actions[a.id]>0).sort((x,y)=>y.actions[a.id]-x.actions[a.id]).slice(0,3);
+    if(!top.length)return;
+    html+=`<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--txt2)">${a.icon} ${a.label}</div>`;
+    const max=top[0].actions[a.id];
+    top.forEach((e,i)=>{html+=`<div class="bar-row"><div class="bar-label" style="width:140px">${['🥇','🥈','🥉'][i]||'·'} ${e.name.split(' ').slice(-2).join(' ')}</div><div class="bar-track"><div class="bar-fill ${i===0?'':'blue'}" style="width:${Math.round(e.actions[a.id]/max*100)}%"></div></div><div class="bar-val">${e.actions[a.id]}${a.unit}</div></div>`;});
+    html+='</div>';
+  });
+  html+='</div></div>';
+  // Most active employees detail
+  html+='<div class="card"><div class="card-header"><div class="card-title">🔥 Chi Tiết Hoạt Động</div></div><div class="card-body" style="overflow-x:auto"><table class="period-table"><thead><tr><th>Nhân Viên</th>'+ALL_ACTIONS.map(a=>`<th title="${a.label}">${a.icon}</th>`).join('')+'<th>Tổng</th></tr></thead><tbody>';
+  Object.values(empMap).sort((a,b)=>b.total-a.total).forEach(e=>{
+    html+=`<tr><td style="font-weight:600;font-size:12px;white-space:nowrap">${e.name.split(' ').slice(-2).join(' ')}</td>`;
+    ALL_ACTIONS.forEach(a=>{const v=e.actions[a.id]||0;html+=`<td style="text-align:center;font-size:12px;color:${v>0?'var(--txt)':'var(--txt3)'}">${v||'—'}</td>`;});
+    html+=`<td style="font-family:Syne,sans-serif;font-weight:800;color:var(--accent2)">${e.total}</td></tr>`;
+  });
+  html+='</tbody></table></div></div>';
+  document.getElementById('atab-activity').innerHTML=html;
+}
+
+function renderAtabDaily(){
+  const{dailyMap}=currentAnalyticsData;
+  const dates=Object.keys(dailyMap).sort().reverse();
+  const el=document.getElementById('atab-daily');
+  if(!dates.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>Chưa có dữ liệu</div>';return;}
+  const maxTotal=Math.max(...dates.map(d=>dailyMap[d].total),1);
+  const maxCount=Math.max(...dates.map(d=>dailyMap[d].count),1);
+
+  let html=`<div class="card"><div class="card-header"><div class="card-title">📅 Chi Tiết Theo Ngày</div><span class="badge badge-blue">${dates.length} ngày</span></div><div class="card-body">`;
+  // Visual bar chart
+  html+='<div style="margin-bottom:20px">';
+  // Mini bar chart SVG style
+  const chartH=120;const chartW=Math.max(dates.length*40,300);
+  html+=`<div style="overflow-x:auto;padding-bottom:8px"><div style="display:flex;align-items:flex-end;gap:8px;min-width:${chartW}px;padding:8px 0 4px">`;
+  const reversed=[...dates].reverse();
+  reversed.forEach(d=>{
+    const day=dailyMap[d];
+    const barH=Math.max(Math.round(day.total/maxTotal*100),4);
+    const dateStr=new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'});
+    const dayName=new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short'});
+    html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:36px;cursor:pointer" title="${d}: ${day.total} HĐ, ${day.count} BC">
+      <div style="font-size:10px;font-weight:700;color:var(--accent2)">${day.total||''}</div>
+      <div style="width:100%;background:linear-gradient(0deg,var(--accent),var(--orange));height:${barH}px;border-radius:4px 4px 0 0;transition:.3s;min-height:4px"></div>
+      <div style="font-size:9px;color:var(--txt3);text-align:center;line-height:1.2">${dateStr}<br>${dayName}</div>
+    </div>`;
+  });
+  html+='</div></div>';
+  html+='</div>';
+
+  // Detail table
+  html+='<div style="overflow-x:auto"><table class="period-table"><thead><tr><th>Ngày</th><th>Thứ</th><th>Báo Cáo</th><th>Hành Động</th><th>Nhân Viên</th><th>Trung Bình</th></tr></thead><tbody>';
+  dates.forEach(d=>{
+    const day=dailyMap[d];
+    const avg=day.count>0?Math.round(day.total/day.count):0;
+    const dayName=new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'long'});
+    const dayDate=new Date(d+'T00:00:00').toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
+    html+=`<tr><td style="font-weight:600;white-space:nowrap">${dayDate}</td><td style="color:var(--txt3);font-size:11px">${dayName}</td><td>${day.count}</td><td style="font-weight:700;color:var(--accent2)">${day.total}</td><td>${day.names.size}</td><td style="color:var(--txt3)">${avg}/NV</td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  html+='</div></div>';
+  el.innerHTML=html;
+}
+
+function renderAtabWeekly(){
+  const{dailyMap}=currentAnalyticsData;
+  const el=document.getElementById('atab-weekly');
+  if(!Object.keys(dailyMap).length){el.innerHTML='<div class="empty"><div class="empty-icon">📆</div>Chưa có dữ liệu</div>';return;}
+
+  // Build week map
+  const weekMap={};
+  Object.entries(dailyMap).forEach(([d,v])=>{
+    const dt=new Date(d+'T00:00:00');
+    const wk=getWeekKey(dt);
+    const wkStart=getWeekStart(dt);
+    if(!weekMap[wkStart])weekMap[wkStart]={key:wk,start:wkStart,count:0,total:0,names:new Set(),days:new Set(),dailyTotals:{}};
+    weekMap[wkStart].count+=v.count;weekMap[wkStart].total+=v.total;
+    v.names.forEach(n=>weekMap[wkStart].names.add(n));
+    weekMap[wkStart].days.add(d);
+    weekMap[wkStart].dailyTotals[d]=v.total;
+  });
+
+  const weeks=Object.values(weekMap).sort((a,b)=>b.start.localeCompare(a.start));
+  if(!weeks.length){el.innerHTML='<div class="empty"><div class="empty-icon">📆</div>Không đủ dữ liệu</div>';return;}
+  const maxTotal=Math.max(...weeks.map(w=>w.total),1);
+
+  let html=`<div class="card"><div class="card-header"><div class="card-title">📆 Tổng Kết Theo Tuần</div><span class="badge badge-blue">${weeks.length} tuần</span></div><div class="card-body">`;
+
+  // Bar chart
+  html+='<div style="overflow-x:auto;margin-bottom:20px"><div style="display:flex;align-items:flex-end;gap:10px;padding:8px 0 4px">';
+  [...weeks].reverse().forEach(w=>{
+    const barH=Math.max(Math.round(w.total/maxTotal*100),4);
+    html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:48px;cursor:pointer" title="${w.key}: ${w.total} HĐ">
+      <div style="font-size:11px;font-weight:700;color:var(--accent2)">${w.total}</div>
+      <div style="width:100%;background:linear-gradient(0deg,#1565C0,var(--blue));height:${barH}px;border-radius:4px 4px 0 0;min-height:4px;transition:.3s"></div>
+      <div style="font-size:9px;color:var(--txt3);text-align:center">${w.key}</div>
+    </div>`;
+  });
+  html+='</div></div>';
+
+  // Table
+  html+='<table class="period-table"><thead><tr><th>Tuần</th><th>Báo Cáo</th><th>Hành Động</th><th>NV Hoạt Động</th><th>Ngày Có BC</th><th>TB/Ngày</th></tr></thead><tbody>';
+  weeks.forEach(w=>{
+    const avgPerDay=w.days.size>0?Math.round(w.total/w.days.size):0;
+    html+=`<tr><td style="font-weight:600">${w.key}</td><td>${w.count}</td><td style="font-weight:700;color:var(--accent2)">${w.total}</td><td>${w.names.size}</td><td>${w.days.size}/7</td><td style="color:var(--txt3)">${avgPerDay}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  html+='</div></div>';
+
+  // Comparison if multiple weeks
+  if(weeks.length>=2){
+    const cur=weeks[0];const prev=weeks[1];
+    const diff=cur.total-prev.total;const pct=prev.total>0?Math.round(diff/prev.total*100):0;
+    const color=diff>=0?'var(--green)':'var(--accent2)';const arrow=diff>=0?'▲':'▼';
+    html+=`<div class="card"><div class="card-header"><div class="card-title">📈 So Sánh Tuần Này vs Tuần Trước</div></div><div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+        <div style="padding:14px;background:var(--bg3);border-radius:10px"><div style="font-size:11px;color:var(--txt3);margin-bottom:4px">Tuần trước</div><div style="font-size:24px;font-weight:800;font-family:Syne,sans-serif">${prev.total}</div><div style="font-size:11px;color:var(--txt3)">${prev.count} báo cáo</div></div>
+        <div style="padding:14px;background:var(--bg3);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:22px;font-weight:800;color:${color}">${arrow}${Math.abs(pct)}%</div><div style="font-size:11px;color:var(--txt3)">${diff>=0?'+':''}${diff} HĐ</div></div>
+        <div style="padding:14px;background:var(--bg3);border-radius:10px"><div style="font-size:11px;color:var(--txt3);margin-bottom:4px">Tuần này</div><div style="font-size:24px;font-weight:800;font-family:Syne,sans-serif;color:${color}">${cur.total}</div><div style="font-size:11px;color:var(--txt3)">${cur.count} báo cáo</div></div>
+      </div>
+    </div></div>`;
+  }
+  el.innerHTML=html;
+}
+
+function renderAtabMonthly(){
+  const{dailyMap}=currentAnalyticsData;
+  const el=document.getElementById('atab-monthly');
+  if(!Object.keys(dailyMap).length){el.innerHTML='<div class="empty"><div class="empty-icon">🗓️</div>Chưa có dữ liệu</div>';return;}
+
+  const monthMap={};
+  Object.entries(dailyMap).forEach(([d,v])=>{
+    const mk=d.slice(0,7);
+    if(!monthMap[mk])monthMap[mk]={key:mk,count:0,total:0,names:new Set(),days:new Set()};
+    monthMap[mk].count+=v.count;monthMap[mk].total+=v.total;
+    v.names.forEach(n=>monthMap[mk].names.add(n));monthMap[mk].days.add(d);
+  });
+
+  const months=Object.values(monthMap).sort((a,b)=>b.key.localeCompare(a.key));
+  if(!months.length){el.innerHTML='<div class="empty"><div class="empty-icon">🗓️</div>Không đủ dữ liệu</div>';return;}
+  const maxTotal=Math.max(...months.map(m=>m.total),1);
+
+  let html=`<div class="card"><div class="card-header"><div class="card-title">🗓️ Tổng Kết Theo Tháng</div><span class="badge badge-blue">${months.length} tháng</span></div><div class="card-body">`;
+
+  // Bar chart
+  html+='<div style="overflow-x:auto;margin-bottom:20px"><div style="display:flex;align-items:flex-end;gap:10px;padding:8px 0 4px">';
+  [...months].reverse().forEach(m=>{
+    const barH=Math.max(Math.round(m.total/maxTotal*110),4);
+    const [yr,mo]=m.key.split('-');
+    html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:54px">
+      <div style="font-size:12px;font-weight:800;color:var(--gold)">${m.total}</div>
+      <div style="width:100%;background:linear-gradient(0deg,var(--gold),#FFD54F);height:${barH}px;border-radius:4px 4px 0 0;min-height:4px;transition:.3s"></div>
+      <div style="font-size:10px;color:var(--txt3);text-align:center">T${mo}<br>${yr}</div>
+    </div>`;
+  });
+  html+='</div></div>';
+
+  // Table
+  html+='<table class="period-table"><thead><tr><th>Tháng</th><th>Báo Cáo</th><th>Hành Động</th><th>NV Hoạt Động</th><th>Ngày Có BC</th><th>TB/Ngày</th></tr></thead><tbody>';
+  months.forEach(m=>{
+    const [yr,mo]=m.key.split('-');
+    const avgPerDay=m.days.size>0?Math.round(m.total/m.days.size):0;
+    html+=`<tr><td style="font-weight:600">Tháng ${mo}/${yr}</td><td>${m.count}</td><td style="font-weight:700;color:var(--gold)">${m.total}</td><td>${m.names.size}</td><td>${m.days.size}</td><td style="color:var(--txt3)">${avgPerDay}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  html+='</div></div>';
+
+  // Month comparison
+  if(months.length>=2){
+    const cur=months[0];const prev=months[1];
+    const diff=cur.total-prev.total;const pct=prev.total>0?Math.round(diff/prev.total*100):0;
+    const color=diff>=0?'var(--green)':'var(--accent2)';const arrow=diff>=0?'▲':'▼';
+    const [cy,cm]=cur.key.split('-');const [py,pm]=prev.key.split('-');
+    html+=`<div class="card"><div class="card-header"><div class="card-title">📈 So Sánh Tháng Này vs Tháng Trước</div></div><div class="card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center">
+        <div style="padding:14px;background:var(--bg3);border-radius:10px"><div style="font-size:11px;color:var(--txt3);margin-bottom:4px">Tháng ${pm}/${py}</div><div style="font-size:24px;font-weight:800;font-family:Syne,sans-serif">${prev.total}</div><div style="font-size:11px;color:var(--txt3)">${prev.count} báo cáo · ${prev.names.size} NV</div></div>
+        <div style="padding:14px;background:var(--bg3);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center"><div style="font-size:22px;font-weight:800;color:${color}">${arrow}${Math.abs(pct)}%</div><div style="font-size:11px;color:var(--txt3)">${diff>=0?'+':''}${diff} HĐ</div></div>
+        <div style="padding:14px;background:var(--bg3);border-radius:10px"><div style="font-size:11px;color:var(--txt3);margin-bottom:4px">Tháng ${cm}/${cy}</div><div style="font-size:24px;font-weight:800;font-family:Syne,sans-serif;color:${color}">${cur.total}</div><div style="font-size:11px;color:var(--txt3)">${cur.count} báo cáo · ${cur.names.size} NV</div></div>
+      </div>
+    </div></div>`;
+  }
+  el.innerHTML=html;
+}
+
+function getWeekStart(d){const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const mon=new Date(d);mon.setDate(diff);return mon.toISOString().split('T')[0];}
+
+function getWeekKey(d){const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);const mon=new Date(d);mon.setDate(diff);return'Tuần '+mon.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit'});}
+
+// ─── ZALO REPORT ───
+function genZaloReport(){
+  const days=parseInt(document.getElementById('analyticsDays')?.value||1);const now=Date.now();
+  const filtered=getFilteredReports(days,'');
+  if(!filtered.length){showToast('Không có dữ liệu');return;}
+  const today=new Date().toLocaleDateString('vi-VN');
+  let txt=`📊 BÁO CÁO TRUYỀN THÔNG TOPZONE\n📅 ${today}\n${'─'.repeat(32)}\n`;
+  const empMap={};
+  filtered.forEach(r=>{if(!empMap[r.name])empMap[r.name]={name:r.name,role:r.role,reports:[],total:0};empMap[r.name].reports.push(r);empMap[r.name].total+=Object.values(r.actions||{}).reduce((a,b)=>a+b,0);});
+  Object.values(empMap).sort((a,b)=>b.total-a.total).forEach((e,i)=>{
+    txt+=`\n${i+1}. ${e.name} (${e.role})\n`;
+    const actSum={};e.reports.forEach(r=>Object.entries(r.actions||{}).forEach(([k,v])=>{actSum[k]=(actSum[k]||0)+v;}));
+    Object.entries(actSum).forEach(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);if(a)txt+=`   ${a.icon} ${a.label}: ${v} ${a.unit}\n`;});
+    txt+=`   📊 Tổng: ${e.total} hành động\n`;
+    const allLinks=e.reports.flatMap(r=>r.imgbbLinks||[]);
+    if(allLinks.length)txt+=`   🔗 Ảnh: ${allLinks.slice(0,3).join(' | ')}${allLinks.length>3?' +'+(allLinks.length-3)+'...':''}\n`;
+  });
+  txt+=`\n${'─'.repeat(32)}\n`;
+  const totalAll=filtered.reduce((s,r)=>s+Object.values(r.actions||{}).reduce((a,b)=>a+b,0),0);
+  txt+=`🔢 Tổng: ${totalAll} hành động\n👥 Nhân viên: ${Object.keys(empMap).length}\n⏰ ${new Date().toLocaleTimeString('vi-VN')}\n✅ Topzone v5`;
+  document.getElementById('zaloText').textContent=txt;
+  document.getElementById('zaloPanel').style.display='block';
+  document.getElementById('zaloPanel').scrollIntoView({behavior:'smooth'});
+}
+function copyZaloReport(){navigator.clipboard.writeText(document.getElementById('zaloText').textContent).then(()=>showToast('✅ Đã copy! Paste vào Zalo/Telegram'));}
+
+// ─── LEADERBOARD ───
+function renderLeaderboard(){
+  const days=parseInt(document.getElementById('lbDays').value||7);
+  const filtered=getFilteredReports(days,'');
+  const empMap={};
+  filtered.forEach(r=>{
+    if(!empMap[r.name])empMap[r.name]={name:r.name,role:r.role||'NV',total:0,days:new Set(),photos:0,rpts:0,pass:0};
+    empMap[r.name].total+=Object.values(r.actions||{}).reduce((a,b)=>a+b,0);
+    empMap[r.name].days.add(r.date);empMap[r.name].photos+=r.photoCount||0;empMap[r.name].rpts++;
+    if(r.aiVerdict==='pass')empMap[r.name].pass++;
+  });
+  const sorted=Object.values(empMap).sort((a,b)=>b.total-a.total);const max=Math.max(...sorted.map(e=>e.total),1);
+  const rIcon=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;const rCls=i=>i===0?'t1':i===1?'t2':i===2?'t3':'';
+  const colors=['linear-gradient(135deg,#F9A825,#FFD54F)','linear-gradient(135deg,#90A4AE,#CFD8DC)','linear-gradient(135deg,#8D6E63,#BCAAA4)'];
+  let html='<div class="lb-wrap">';
+  if(!sorted.length){html+='<div class="empty">Chưa có dữ liệu</div>';}
+  else sorted.forEach((e,i)=>{
+    const bg=i<3?colors[i]:'linear-gradient(135deg,var(--accent),var(--orange))';
+    html+=`<div class="lb-row"><div class="lb-rank ${rCls(i)}">${rIcon(i)}</div>
+      <div class="lb-avatar" style="background:${bg}">${e.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase()}</div>
+      <div class="lb-info"><div class="lb-name">${e.name} <span style="font-size:10px;color:var(--txt3)">${e.role}</span></div>
+        <div class="lb-detail">${e.days.size} ngày · ${e.rpts} bc · ${e.photos} ảnh${e.pass?' · ✅'+e.pass:''}</div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${Math.round(e.total/max*100)}%"></div></div>
+      </div><div class="lb-score">${e.total}</div></div>`;
+  });
+  html+='</div>';document.getElementById('lbContent').innerHTML=html;
+}
+
+// ─── EXPORT ───
+function getExportData(){
+  const from=document.getElementById('exportFrom').value;const to=document.getElementById('exportTo').value;const name=document.getElementById('exportName').value.toLowerCase();
+  return reports.filter(r=>{if(from&&r.date<from)return false;if(to&&r.date>to)return false;if(name&&!r.name.toLowerCase().includes(name))return false;return true;});
+}
+function exportCSV(){
+  const data=getExportData();if(!data.length){showToast('Không có dữ liệu');return;}
+  const hdr=['Ngày','Họ Tên','Vị Trí','Ca',...ALL_ACTIONS.map(a=>a.label),'Tổng HĐ','Số Ảnh','Link Ảnh','AI Verdict','Ghi Chú'];
+  const rows=data.map(r=>[r.date,`"${r.name}"`,r.role||'NV',`"${r.shift||''}"`,
+    ...ALL_ACTIONS.map(a=>r.actions?.[a.id]||0),
+    Object.values(r.actions||{}).reduce((a,b)=>a+b,0),r.photoCount||0,
+    `"${(r.imgbbLinks||[]).join(' ')}"`,r.aiVerdict||'',`"${(r.note||'').replace(/"/g,'""')}"`]);
+  dl('\uFEFF'+[hdr,...rows].map(r=>r.join(',')).join('\n'),'topzone_'+new Date().toISOString().split('T')[0]+'.csv','text/csv');
+  showToast('✅ Đã xuất CSV');
+}
+function exportJSON(){const data=getExportData().map(r=>{const{photos,...rest}=r;return{...rest,photoCount:(photos||[]).length};});dl(JSON.stringify(data,null,2),'topzone_'+new Date().toISOString().split('T')[0]+'.json','application/json');showToast('✅ Đã xuất JSON');}
+function exportPrint(){
+  const data=getExportData();if(!data.length){showToast('Không có dữ liệu');return;}
+  const rows=data.map(r=>{const total=Object.values(r.actions||{}).reduce((a,b)=>a+b,0);const acts=Object.entries(r.actions||{}).map(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);return a?`${a.icon}${v}${a.unit}`:'';}).filter(Boolean).join(' | ');const v=r.aiVerdict==='pass'?'✅':r.aiVerdict==='fail'?'❌':'⏳';const links=(r.imgbbLinks||[]).map((l,i)=>`<a href="${l}" target="_blank">🔗${i+1}</a>`).join(' ');return `<tr><td>${r.date}</td><td>${r.name}</td><td>${r.role||''}</td><td>${r.shift||''}</td><td>${acts||'–'}</td><td>${total}</td><td>${r.photoCount||0}</td><td>${links||'–'}</td><td>${v}</td><td>${r.note||''}</td></tr>`;}).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Topzone BC</title><style>body{font-family:Arial;margin:20px;font-size:12px}h1{color:#E53935}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:6px 8px}th{background:#E53935;color:#fff}tr:nth-child(even){background:#fff5f5}a{color:#1565C0}</style></head><body><h1>TOPZONE – Báo Cáo Truyền Thông v5</h1><p>Xuất: ${new Date().toLocaleString('vi-VN')}</p><table><thead><tr><th>Ngày</th><th>Họ Tên</th><th>Vị Trí</th><th>Ca</th><th>HĐ</th><th>Tổng</th><th>Ảnh</th><th>Link</th><th>AI</th><th>GC</th></tr></thead><tbody>${rows}</tbody></table></body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();setTimeout(()=>w.print(),500);
+}
+function backupData(){dl(JSON.stringify(reports,null,2),'topzone_backup_'+new Date().toISOString().split('T')[0]+'.json','application/json');showToast('✅ Backup OK');}
+function restoreData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=async ev=>{try{const d=JSON.parse(ev.target.result);if(!Array.isArray(d))throw 0;if(!confirm(`Khôi phục ${d.length} báo cáo? Dữ liệu hiện tại sẽ bị ghi đè.`))return;reports=d;save();await pushToShared();showToast(`✅ Đã khôi phục ${d.length} bc + sync`);}catch{showToast('❌ File lỗi');}};
+  r.readAsText(f);e.target.value='';
+}
+async function clearAllData(){if(!confirm('Xoá TOÀN BỘ dữ liệu local?'))return;if(!confirm('Xác nhận lần 2?'))return;reports=[];save();showToast('🗑 Đã xoá local');updateSharedUI();}
+
+// ─── UTILS ───
+function dl(content,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3500);}
+function updateMeta(){
+  const el=document.getElementById('totalRecords');if(el)el.textContent=`${reports.length} báo cáo`;
+  const h=document.getElementById('hashCountSett');if(h)h.textContent=Object.keys(photoHashes).length;
+}
+function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.add('hidden'));}
+function clearHashes(){if(!confirm('Xoá dữ liệu vân tay ảnh?'))return;photoHashes={};localStorage.setItem(HASH_KEY,'{}');document.getElementById('hashCountSett').textContent='0';showToast('🗑 Đã xoá vân tay');}
+
+function goTab(name,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  else document.querySelectorAll('.nav-btn').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+name+"'"))b.classList.add('active');});
+  if(name==='history')renderHistory();
+  if(name==='analytics')renderAnalytics();
+  if(name==='leaderboard')renderLeaderboard();
+  if(name==='settings'){updateImgbbUI();updateJsonbinUI();document.getElementById('hashCountSett').textContent=Object.keys(photoHashes).length;updateSharedUI();}
+  if(name==='export')updateMeta();
+}
+
+document.getElementById('previewModal').addEventListener('click',e=>{if(e.target===document.getElementById('previewModal'))closeModal();});
+
+// Auto sync every 60s (only if configured)
+setInterval(async()=>{if(jsonbinReady())await syncFromShared();},60000);
+</script>
+</body>
+</html>
