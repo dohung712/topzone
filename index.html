@@ -303,6 +303,138 @@ hr.div{border:none;border-top:1px solid var(--bg4);margin:16px 0}
 </head>
 <body>
 
+<!-- ═══ MÀNN HÌNH ĐĂNG NHẬP ═══ -->
+<div id="loginScreen" style="position:fixed;inset:0;background:#0D0D0D;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+  <div style="width:100%;max-width:380px">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#E8321C,#FF7D1A);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:#fff;margin:0 auto 14px">TZ</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#fff">TOPZONE</div>
+      <div style="font-size:12px;color:#888;margin-top:4px">Quản Lý Truyền Thông v6</div>
+    </div>
+
+    <!-- Login card -->
+    <div style="background:#161616;border:1px solid #2A2A2A;border-radius:16px;padding:28px 24px">
+      <div style="font-size:13px;font-weight:600;color:#DADADA;margin-bottom:18px;text-align:center">🔐 Đăng nhập để tiếp tục</div>
+
+      <!-- Role select -->
+      <div style="margin-bottom:14px">
+        <div style="font-size:11px;font-weight:600;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Vai trò</div>
+        <div style="display:flex;gap:8px">
+          <div id="roleNV" onclick="selectRole('NV')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #2A2A2A;text-align:center;cursor:pointer;transition:.2s;font-size:13px;font-weight:600;color:#888">
+            👤 Nhân Viên
+          </div>
+          <div id="roleQL" onclick="selectRole('QL')" style="flex:1;padding:10px;border-radius:10px;border:2px solid #2A2A2A;text-align:center;cursor:pointer;transition:.2s;font-size:13px;font-weight:600;color:#888">
+            👑 Quản Lý
+          </div>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div style="margin-bottom:18px">
+        <div style="font-size:11px;font-weight:600;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px">Mật khẩu</div>
+        <input type="password" id="loginPwd" placeholder="Nhập mật khẩu..." onkeydown="if(event.key==='Enter')doLogin()"
+          style="width:100%;padding:11px 14px;background:#1E1E1E;border:1px solid #2A2A2A;border-radius:10px;font-size:14px;color:#fff;outline:none;font-family:'DM Sans',sans-serif;transition:.2s"
+          onfocus="this.style.borderColor='#E8321C'" onblur="this.style.borderColor='#2A2A2A'">
+        <div id="loginErr" style="display:none;margin-top:8px;font-size:12px;color:#FF5A3D;text-align:center">❌ Sai mật khẩu. Thử lại!</div>
+      </div>
+
+      <button onclick="doLogin()" style="width:100%;padding:13px;background:linear-gradient(135deg,#E8321C,#FF7D1A);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.3px;transition:.2s"
+        onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+        🚀 Đăng Nhập
+      </button>
+    </div>
+
+    <div style="text-align:center;margin-top:16px;font-size:11px;color:#444">
+      Liên hệ quản lý nếu quên mật khẩu
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PASSWORDS ───
+// ĐỔI MẬT KHẨU TẠI ĐÂY:
+const PASSWORDS = {
+  NV: 'topzone2024',   // Mật khẩu cho Nhân Viên
+  QL: 'admin@tz2024',  // Mật khẩu cho Quản Lý (có thêm quyền)
+};
+const LOGIN_KEY = 'tz_login_v6';
+let currentRole = '';
+
+function selectRole(role){
+  currentRole=role;
+  ['NV','QL'].forEach(r=>{
+    const el=document.getElementById('role'+r);
+    if(r===role){el.style.borderColor='#E8321C';el.style.background='rgba(232,50,28,.12)';el.style.color='#FF5A3D';}
+    else{el.style.borderColor='#2A2A2A';el.style.background='transparent';el.style.color='#888';}
+  });
+  document.getElementById('loginPwd').focus();
+}
+
+function doLogin(){
+  if(!currentRole){
+    document.getElementById('loginErr').textContent='⚠️ Chọn vai trò trước!';
+    document.getElementById('loginErr').style.display='block';return;
+  }
+  const pwd=document.getElementById('loginPwd').value;
+  if(pwd===PASSWORDS[currentRole]){
+    sessionStorage.setItem(LOGIN_KEY,JSON.stringify({role:currentRole,time:Date.now()}));
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('loginErr').style.display='none';
+    // Apply role restrictions
+    applyRoleUI(currentRole);
+    // Trigger app init
+    window._loginDone=true;
+    if(window._appReady)initApp();
+  } else {
+    document.getElementById('loginErr').textContent='❌ Sai mật khẩu. Thử lại!';
+    document.getElementById('loginErr').style.display='block';
+    document.getElementById('loginPwd').value='';
+    document.getElementById('loginPwd').focus();
+    // Shake animation
+    const card=document.getElementById('loginPwd');
+    card.style.borderColor='#E8321C';
+    setTimeout(()=>{card.style.borderColor='#2A2A2A';},800);
+  }
+}
+
+function applyRoleUI(role){
+  // Quản Lý thấy thêm: tab Xuất, tab Cài Đặt đầy đủ
+  // Nhân Viên ẩn tab Cài Đặt (không cho xoá data, không thấy settings nhạy cảm)
+  if(role==='NV'){
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      if(b.getAttribute('onclick')?.includes("'settings'"))b.style.display='none';
+      if(b.getAttribute('onclick')?.includes("'export'"))b.style.display='none';
+    });
+  }
+  // Hiển thị tên role ở header
+  const sub=document.querySelector('.logo-sub');
+  if(sub)sub.textContent='v6 · '+(role==='QL'?'👑 Quản Lý':'👤 Nhân Viên');
+}
+
+function checkLogin(){
+  try{
+    const s=sessionStorage.getItem(LOGIN_KEY);
+    if(s){
+      const d=JSON.parse(s);
+      // Session valid 12 hours
+      if(Date.now()-d.time<12*3600*1000){
+        document.getElementById('loginScreen').style.display='none';
+        applyRoleUI(d.role);
+        currentRole=d.role;
+        return true;
+      }
+    }
+  }catch{}
+  return false;
+}
+
+// Auto-select NV role for convenience
+selectRole('NV');
+// Check existing session
+checkLogin();
+</script>
+
 <!-- HEADER -->
 <div class="header">
   <div class="header-inner">
@@ -1013,6 +1145,13 @@ function save(){
 // ─── INIT ───
 load();
 window.addEventListener('load',async()=>{
+  window._appReady=true;
+  if(window._loginDone||document.getElementById('loginScreen').style.display==='none'){
+    await initApp();
+  }
+});
+
+async function initApp(){
   loadTheme();
   const now=new Date();
   document.getElementById('reportDate').value=now.toISOString().split('T')[0];
@@ -1032,7 +1171,7 @@ window.addEventListener('load',async()=>{
     if(sub)sub.textContent='⚠️ Chưa setup đồng bộ · Vào Cài Đặt → nhập JSONBin Key + Bin ID';
     const cnt=document.getElementById('sharedCount');if(cnt)cnt.textContent='!';
   }
-});
+}
 
 // ─── EMP CHIPS ───
 function buildEmpChips(){
