@@ -234,6 +234,20 @@ input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-
 .verdict-fail{background:rgba(232,50,28,.1);color:var(--accent2)}
 .verdict-pending{background:var(--bg4);color:var(--txt3)}
 
+/* ─── GALLERY MODAL ─── */
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.gallery-item{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid var(--bg4);transition:.2s;background:var(--bg3)}
+.gallery-item:hover{border-color:var(--accent);transform:scale(1.03)}
+.gallery-item img{width:100%;height:100%;object-fit:cover;display:block}
+.gallery-item-num{position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,.7);color:#fff;font-size:10px;font-weight:700;padding:2px 5px;border-radius:4px}
+.gallery-empty{text-align:center;padding:40px 20px;color:var(--txt3);font-size:13px}
+.gallery-empty-icon{font-size:40px;margin-bottom:8px}
+.log-photo-thumb{width:56px;height:56px;object-fit:cover;border-radius:7px;border:1px solid var(--bg4);cursor:pointer;transition:.2s;flex-shrink:0}
+.log-photo-thumb:hover{border-color:var(--accent);transform:scale(1.06)}
+.log-photos-inline{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;align-items:center}
+.log-photos-more{font-size:11px;color:var(--txt3);background:var(--bg3);border:1px solid var(--bg4);border-radius:7px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-weight:600;flex-shrink:0}
+.log-photos-more:hover{border-color:var(--accent);color:var(--accent2)}
+
 /* ─── LEADERBOARD ─── */
 .lb-wrap{background:var(--bg2);border:1px solid var(--bg4);border-radius:var(--r2);overflow:hidden}
 .lb-row{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bg4);transition:.2s}
@@ -356,7 +370,7 @@ hr.div{border:none;border-top:1px solid var(--bg4);margin:16px 0}
 // ĐỔI MẬT KHẨU TẠI ĐÂY:
 const PASSWORDS = {
   NV: 'topzone2024',   // Mật khẩu cho Nhân Viên
-  QL: 'tz1',  // Mật khẩu cho Quản Lý (có thêm quyền)
+  QL: 'admin@tz2024',  // Mật khẩu cho Quản Lý (có thêm quyền)
 };
 const LOGIN_KEY = 'tz_login_v6';
 let currentRole = '';
@@ -855,6 +869,17 @@ checkLogin();
 
 </div><!-- /main -->
 
+<!-- MODAL GALLERY ẢNH BÁO CÁO -->
+<div class="modal-overlay hidden" id="galleryModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" style="max-width:680px;width:95vw">
+    <div class="modal-header">
+      <span class="modal-title" id="galleryTitle">📸 Ảnh Bằng Chứng</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="galleryBody" style="padding:16px"></div>
+  </div>
+</div>
+
 <!-- MODAL XEM TRƯỚC -->
 <div class="modal-overlay hidden" id="previewModal">
   <div class="modal">
@@ -1268,7 +1293,7 @@ function renderPreviews(){
   });
 }
 function removePhoto(i,e){if(e)e.stopPropagation();currentPhotos.splice(i,1);renderPreviews();updatePhotoIndicator([]);if(!currentPhotos.length){document.getElementById('aiTriggerWrap').style.display='none';document.getElementById('aiPanel').style.display='none';}}
-function zoom(src){document.getElementById('photoModalImg').src=src;document.getElementById('photoModal').classList.remove('hidden');}
+function zoom(src){zoomSrc(src);}
 function updatePhotoIndicator(dups){
   const ind=document.getElementById('photoIndicator');ind.textContent=currentPhotos.length+' ảnh';ind.className='badge '+(currentPhotos.length?'badge-blue':'badge-gray');
   const dupEl=document.getElementById('dupIndicator');const dupWarn=document.getElementById('dupWarning');
@@ -1507,6 +1532,39 @@ function previewReport(){
   document.getElementById('previewContent').innerHTML=html;document.getElementById('previewModal').classList.remove('hidden');
 }
 
+// ─── GALLERY ───
+function openGallery(id){
+  const r=reports.find(x=>x.id===id);
+  if(!r)return;
+  // Collect all image sources: ImgBB links first, then dataUrls
+  const imgs=[];
+  // From imgbbLinks
+  (r.imgbbLinks||[]).forEach((url,i)=>imgs.push({src:url,label:'Ảnh '+(i+1)}));
+  // From photos array – add dataUrl ones not already covered by imgbbLinks
+  (r.photos||[]).forEach((p,i)=>{
+    if(p.imgbbLink&&imgs.find(x=>x.src===p.imgbbLink))return; // already added
+    if(p.imgbbLink)imgs.push({src:p.imgbbLink,label:'Ảnh '+(imgs.length+1)});
+    else if(p.dataUrl)imgs.push({src:p.dataUrl,label:'Ảnh '+(imgs.length+1)});
+  });
+  const title=document.getElementById('galleryTitle');
+  const body=document.getElementById('galleryBody');
+  title.textContent=`📸 Ảnh Bằng Chứng – ${r.name} · ${r.date}`;
+  if(!imgs.length){
+    body.innerHTML=`<div class="gallery-empty"><div class="gallery-empty-icon">📷</div>Báo cáo này chưa có ảnh đính kèm</div>`;
+  } else {
+    body.innerHTML=`<div style="font-size:12px;color:var(--txt3);margin-bottom:10px">${imgs.length} ảnh · Nhấn để xem full</div><div class="gallery-grid">`+
+      imgs.map((img,i)=>`<div class="gallery-item" onclick="zoomSrc('${img.src.replace(/'/g,"\\'")}')">
+        <img src="${img.src}" alt="${img.label}" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:var(--txt3);font-size:11px;padding:8px;text-align:center\\'>Không tải được<br><a href=\\'${img.src}\\' target=\\'_blank\\' style=\\'color:var(--blue)\\'>Mở link</a></div>'">
+        <div class="gallery-item-num">${i+1}</div>
+      </div>`).join('')+`</div>`;
+  }
+  document.getElementById('galleryModal').classList.remove('hidden');
+}
+function zoomSrc(src){
+  document.getElementById('photoModalImg').src=src;
+  document.getElementById('photoModal').classList.remove('hidden');
+}
+
 // ─── DELETE REPORT (Quản Lý) ───
 async function deleteReport(id){
   const r=reports.find(x=>x.id===id);
@@ -1541,12 +1599,48 @@ function renderHistory(){
     const acts=Object.entries(r.actions||{}).map(([k,v])=>{const a=ALL_ACTIONS.find(x=>x.id===k);return a?`<span class="badge badge-gray" style="font-size:10px">${a.icon}${v}${a.unit}</span>`:''}).join(' ');
     const vc=r.aiVerdict==='pass'?'verdict-pass':r.aiVerdict==='fail'?'verdict-fail':'verdict-pending';
     const vt=r.aiVerdict==='pass'?'✅ Đúng':r.aiVerdict==='fail'?'❌ Sai':'⏳ Chờ';
+
+    // Collect all image sources
+    const allImgs=[];
+    (r.imgbbLinks||[]).forEach(url=>allImgs.push(url));
+    (r.photos||[]).forEach(p=>{
+      if(p.imgbbLink&&allImgs.includes(p.imgbbLink))return;
+      if(p.imgbbLink)allImgs.push(p.imgbbLink);
+      else if(p.dataUrl)allImgs.push(p.dataUrl);
+    });
+    const totalImgs=allImgs.length||(r.photoCount||0);
+
+    // Inline thumbnails (show first 4)
     let photosHtml='';
-    if(r.photos&&r.photos.length)photosHtml='<div class="log-photos-row">'+r.photos.slice(0,8).map(p=>p.dataUrl?`<img class="log-photo" src="${p.dataUrl}" onclick="zoom('${p.dataUrl}')">`:`<a href="${p.imgbbLink||'#'}" target="_blank"><img class="log-photo" src="${p.imgbbLink||''}" alt="ảnh"></a>`).join('')+'</div>';
-    let linksHtml='';
-    if(r.imgbbLinks&&r.imgbbLinks.length)linksHtml='<div style="margin:4px 0;display:flex;flex-wrap:wrap;gap:4px">'+r.imgbbLinks.map((l,i)=>`<a href="${l}" target="_blank" class="badge badge-blue" style="font-size:10px">🔗 Ảnh ${i+1}</a>`).join('')+'</div>';
-    const deleteBtn=isManager?`<button class="btn btn-danger" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="deleteReport(${r.id})">🗑 Xoá</button>`:'';
-    return `<div class="log-item"><div class="log-head"><div class="log-name">${r.name}</div><span class="badge badge-gray" style="font-size:10px">${r.role||'NV'}</span><span class="badge badge-gray" style="font-size:10px">${r.shift||'—'}</span><div class="log-date">${r.date?new Date(r.date+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'}):'—'}</div>${deleteBtn}</div><div class="log-actions">${acts||'<span style="font-size:12px;color:var(--txt3)">Không có hoạt động</span>'}</div>${photosHtml}${linksHtml}<div class="log-foot"><div style="font-size:12px;color:var(--txt3)">Tổng: <strong style="color:var(--txt)">${total}</strong> hành động · ${r.photoCount||0} ảnh</div><span class="verdict-mini ${vc}">${vt}</span></div></div>`;
+    if(allImgs.length){
+      const preview=allImgs.slice(0,4);
+      const extra=allImgs.length-4;
+      photosHtml=`<div class="log-photos-inline">
+        ${preview.map(src=>`<img class="log-photo-thumb" src="${src}" onclick="openGallery(${r.id})" title="Nhấn để xem tất cả ảnh">`).join('')}
+        ${extra>0?`<div class="log-photos-more" onclick="openGallery(${r.id})">+${extra}<br>ảnh</div>`:''}
+      </div>`;
+    } else if(totalImgs>0){
+      // Has photos count but no urls yet
+      photosHtml=`<div style="margin:8px 0"><button class="btn btn-ghost btn-xs" onclick="openGallery(${r.id})">📸 Xem ${totalImgs} ảnh</button></div>`;
+    }
+
+    const deleteBtn=isManager?`<button class="btn btn-danger" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="event.stopPropagation();deleteReport(${r.id})">🗑 Xoá</button>`:'';
+    const viewPhotoBtn=totalImgs>0?`<button class="btn btn-blue btn-xs" onclick="openGallery(${r.id})" style="font-size:11px">📸 ${totalImgs} ảnh</button>`:'';
+    return `<div class="log-item">
+      <div class="log-head">
+        <div class="log-name">${r.name}</div>
+        <span class="badge badge-gray" style="font-size:10px">${r.role||'NV'}</span>
+        <span class="badge badge-gray" style="font-size:10px">${r.shift||'—'}</span>
+        <div class="log-date">${r.date?new Date(r.date+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit'}):'—'}</div>
+        ${deleteBtn}
+      </div>
+      <div class="log-actions">${acts||'<span style="font-size:12px;color:var(--txt3)">Không có hoạt động</span>'}</div>
+      ${photosHtml}
+      <div class="log-foot">
+        <div style="font-size:12px;color:var(--txt3)">Tổng: <strong style="color:var(--txt)">${total}</strong> hành động · ${totalImgs} ảnh</div>
+        <div style="display:flex;gap:6px;align-items:center">${viewPhotoBtn}<span class="verdict-mini ${vc}">${vt}</span></div>
+      </div>
+    </div>`;
   }).join('');
 }
 
