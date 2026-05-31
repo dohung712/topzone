@@ -1025,7 +1025,13 @@ window.addEventListener('load',async()=>{
   const sb=document.getElementById('shiftBadge');
   if(sb){sb.textContent=h<14?'Ca Sáng':h<20?'Ca Chiều':'Ca Tối';sb.className='badge '+(h<14?'badge-gold':h<20?'badge-blue':'badge-red');}
   // Sync from shared if configured
-  if(jsonbinReady()){await syncFromShared();}else{setSyncUI('off');updateSharedUI();showToast('💡 Vào Cài Đặt → cấu hình JSONBin để dùng chung');}
+  if(jsonbinReady()){await syncFromShared();}else{
+    setSyncUI('off');updateSharedUI();
+    // Update banner
+    const sub=document.querySelector('.shared-banner-sub');
+    if(sub)sub.textContent='⚠️ Chưa setup đồng bộ · Vào Cài Đặt → nhập JSONBin Key + Bin ID';
+    const cnt=document.getElementById('sharedCount');if(cnt)cnt.textContent='!';
+  }
 });
 
 // ─── EMP CHIPS ───
@@ -1201,7 +1207,133 @@ async function submitReport(){
   await pushToShared();
   btn.disabled=false;btn.textContent='✅ Lưu Báo Cáo';
   showToast('✅ Đã lưu'+(imgbbLinks.length?' + '+imgbbLinks.length+' link ảnh':'')+' · Shared');
+  // Auto export report card image
+  setTimeout(()=>exportReportCard(report),400);
   clearForm();updateSharedUI();
+}
+
+// ─── EXPORT REPORT CARD (PNG tự động tải về) ───
+function exportReportCard(report){
+  try{
+    const W=640,PAD=32,HEADER_H=90,ROW_H=38,FOOTER_H=56;
+    const actionEntries=Object.entries(report.actions||{}).filter(([,v])=>v>0);
+    const H=HEADER_H+Math.max(actionEntries.length,1)*ROW_H+FOOTER_H+PAD*2+20;
+
+    const canvas=document.createElement('canvas');
+    const dpr=2; // retina
+    canvas.width=W*dpr;canvas.height=H*dpr;
+    const ctx=canvas.getContext('2d');
+    ctx.scale(dpr,dpr);
+
+    // Background
+    const bgGrad=ctx.createLinearGradient(0,0,0,H);
+    bgGrad.addColorStop(0,'#161616');bgGrad.addColorStop(1,'#0D0D0D');
+    ctx.fillStyle=bgGrad;ctx.fillRect(0,0,W,H);
+
+    // Top accent bar
+    const topGrad=ctx.createLinearGradient(0,0,W,0);
+    topGrad.addColorStop(0,'#E8321C');topGrad.addColorStop(1,'#FF7D1A');
+    ctx.fillStyle=topGrad;ctx.fillRect(0,0,W,4);
+
+    // Logo pill
+    ctx.fillStyle='rgba(232,50,28,0.15)';
+    roundRect(ctx,PAD,16,68,32,8);ctx.fill();
+    ctx.fillStyle='#FF5A3D';ctx.font='bold 13px sans-serif';ctx.textBaseline='middle';
+    ctx.fillText('TOPZONE',PAD+10,32);
+
+    // Header: name + date
+    ctx.fillStyle='#FFFFFF';ctx.font='bold 22px sans-serif';ctx.textBaseline='alphabetic';
+    ctx.fillText(report.name,PAD,68);
+
+    // Role badge
+    const roleTxt=report.role||'NV';
+    const roleW=ctx.measureText(roleTxt).width+16;
+    ctx.fillStyle='rgba(46,139,255,0.18)';
+    roundRect(ctx,PAD+ctx.measureText(report.name).width+10,54,roleW,20,6);ctx.fill();
+    ctx.fillStyle='#2E8BFF';ctx.font='bold 11px sans-serif';
+    ctx.fillText(roleTxt,PAD+ctx.measureText(report.name).width+18,67);
+
+    // Date + shift right side
+    ctx.fillStyle='#888888';ctx.font='12px sans-serif';ctx.textAlign='right';
+    const dateStr=new Date(report.date+'T00:00:00').toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+    ctx.fillText(dateStr,W-PAD,55);
+    ctx.fillStyle='#606060';ctx.font='11px sans-serif';
+    ctx.fillText(report.shift||'',W-PAD,72);
+    ctx.textAlign='left';
+
+    // Divider
+    ctx.strokeStyle='#2A2A2A';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD,HEADER_H+4);ctx.lineTo(W-PAD,HEADER_H+4);ctx.stroke();
+
+    // Actions list
+    let y=HEADER_H+PAD;
+    if(!actionEntries.length){
+      ctx.fillStyle='#606060';ctx.font='13px sans-serif';
+      ctx.fillText('Không có hoạt động ghi nhận',PAD,y+20);
+      y+=ROW_H;
+    } else {
+      const maxVal=Math.max(...actionEntries.map(([,v])=>v),1);
+      actionEntries.forEach(([k,v])=>{
+        const a=ALL_ACTIONS.find(x=>x.id===k);
+        if(!a)return;
+        // Icon + label
+        ctx.fillStyle='#DADADA';ctx.font='13px sans-serif';
+        ctx.fillText(a.icon+' '+a.label,PAD,y+24);
+        // Bar
+        const barX=PAD+200,barW=W-PAD*2-200-60,barH2=8;
+        ctx.fillStyle='#2A2A2A';
+        roundRect(ctx,barX,y+16,barW,barH2,4);ctx.fill();
+        const fillW=Math.round(v/maxVal*barW);
+        const barGrad=ctx.createLinearGradient(barX,0,barX+fillW,0);
+        barGrad.addColorStop(0,'#E8321C');barGrad.addColorStop(1,'#FF7D1A');
+        ctx.fillStyle=barGrad;
+        roundRect(ctx,barX,y+16,Math.max(fillW,4),barH2,4);ctx.fill();
+        // Value
+        ctx.fillStyle='#FF5A3D';ctx.font='bold 13px sans-serif';ctx.textAlign='right';
+        ctx.fillText(v+' '+a.unit,W-PAD,y+24);
+        ctx.textAlign='left';
+        y+=ROW_H;
+      });
+    }
+
+    // Divider before footer
+    ctx.strokeStyle='#2A2A2A';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD,y+4);ctx.lineTo(W-PAD,y+4);ctx.stroke();
+    y+=16;
+
+    // Footer: total + photos + timestamp
+    const totalVal=Object.values(report.actions||{}).reduce((a,b)=>a+b,0);
+    ctx.fillStyle='#888888';ctx.font='12px sans-serif';
+    ctx.fillText(`📸 ${report.photoCount||0} ảnh bằng chứng`,PAD,y+20);
+    ctx.fillStyle='#888888';ctx.font='12px sans-serif';ctx.textAlign='right';
+    ctx.fillText('Topzone v6 · '+new Date().toLocaleTimeString('vi-VN'),W-PAD,y+20);
+    ctx.textAlign='left';
+
+    // Total big
+    ctx.fillStyle='rgba(232,50,28,0.12)';
+    roundRect(ctx,PAD,y+28,W-PAD*2,32,8);ctx.fill();
+    ctx.fillStyle='#FF5A3D';ctx.font='bold 14px sans-serif';
+    ctx.fillText('🏃 TỔNG HÀNH ĐỘNG:',PAD+14,y+48);
+    ctx.fillStyle='#FFFFFF';ctx.font='bold 18px sans-serif';ctx.textAlign='right';
+    ctx.fillText(totalVal,W-PAD-14,y+48);
+    ctx.textAlign='left';
+
+    // Download
+    canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const safeName=report.name.replace(/\s+/g,'_');
+      a.href=url;a.download=`BC_${safeName}_${report.date}.png`;
+      a.click();URL.revokeObjectURL(url);
+      showToast('📥 Đã tải ảnh báo cáo về máy!');
+    },'image/png');
+  }catch(err){console.warn('exportReportCard error:',err);}
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);
+  ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
 }
 
 function clearForm(){
