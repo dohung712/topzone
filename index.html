@@ -399,15 +399,13 @@ function doLogin(){
 }
 
 function applyRoleUI(role){
-  // Quản Lý thấy thêm: tab Xuất, tab Cài Đặt đầy đủ
-  // Nhân Viên ẩn tab Cài Đặt (không cho xoá data, không thấy settings nhạy cảm)
   if(role==='NV'){
     document.querySelectorAll('.nav-btn').forEach(b=>{
-      if(b.getAttribute('onclick')?.includes("'settings'"))b.style.display='none';
-      if(b.getAttribute('onclick')?.includes("'export'"))b.style.display='none';
+      const oc=b.getAttribute('onclick')||'';
+      const allowed=["'report'","'history'","'analytics'"];
+      if(!allowed.some(t=>oc.includes(t)))b.style.display='none';
     });
   }
-  // Hiển thị tên role ở header
   const sub=document.querySelector('.logo-sub');
   if(sub)sub.textContent='v6 · '+(role==='QL'?'👑 Quản Lý':'👤 Nhân Viên');
 }
