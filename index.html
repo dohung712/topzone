@@ -695,6 +695,16 @@ checkLogin();
     <button class="atab" onclick="switchAtab('activity',this)">🏃 Hoạt Động</button>
   </div>
 
+  <!-- ACTIVITY FILTER (chỉ hiện khi ở tab Hoạt Động) -->
+  <div id="activityFilterBar" style="display:none;margin-bottom:12px;display:none">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--bg2);border:1px solid var(--bg4);border-radius:12px">
+      <span style="font-size:12px;font-weight:700;color:var(--txt3)">🎯 Chọn hoạt động:</span>
+      <select id="activitySelect" onchange="renderAtabActivity()" style="font-size:13px;flex:1;min-width:180px">
+        <option value="">— Tất cả hoạt động —</option>
+      </select>
+    </div>
+  </div>
+
   <div id="atab-overview"></div>
   <div id="atab-daily" style="display:none"></div>
   <div id="atab-weekly" style="display:none"></div>
@@ -966,7 +976,7 @@ const THEME_KEY     = 'tz_theme_v6';
 const SCRIPT_KEY    = 'tz_script_url_v6'; // key lưu Apps Script URL
 
 // Google Sheets sync config (thay JSONBin)
-const SCRIPT_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbyhODrgcVQ9olh-gh_OTaFMIYo12mJVCGRLMarU_vj-vzMfGM_gS5AOuFQKRbGhguPs/exec';
+const SCRIPT_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxI5e-ISZJdeN4XWtRzOB3lUHAUp3ScqPCx85vZ6F6eUJprOahsCzRggzf2SY2ahkYK/exec';
 let scriptUrl = SCRIPT_DEFAULT_URL;
 
 // State
@@ -1873,6 +1883,9 @@ function switchAtab(id,btn){
   ['overview','daily','weekly','monthly','missing','activity'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=t===id?'block':'none';
   });
+  // Hiện/ẩn filter bar hoạt động
+  const fb=document.getElementById('activityFilterBar');
+  if(fb)fb.style.display=id==='activity'?'block':'none';
   currentAtab=id;
   renderAtab(id);
 }
@@ -1959,26 +1972,111 @@ function renderAtabMissing(){
 }
 
 function renderAtabActivity(){
-  const{empMap,actTotals,days}=currentAnalyticsData;
-  // Top performers per action
-  let html='<div class="card"><div class="card-header"><div class="card-title">🏅 Top Hoạt Động Từng Loại</div></div><div class="card-body">';
-  ALL_ACTIONS.forEach(a=>{
-    const top=Object.values(empMap).filter(e=>e.actions[a.id]>0).sort((x,y)=>y.actions[a.id]-x.actions[a.id]).slice(0,3);
-    if(!top.length)return;
-    html+=`<div style="margin-bottom:16px"><div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--txt2)">${a.icon} ${a.label}</div>`;
-    const max=top[0].actions[a.id];
-    top.forEach((e,i)=>{html+=`<div class="bar-row"><div class="bar-label" style="width:140px">${['🥇','🥈','🥉'][i]||'·'} ${e.name.split(' ').slice(-2).join(' ')}</div><div class="bar-track"><div class="bar-fill ${i===0?'':'blue'}" style="width:${Math.round(e.actions[a.id]/max*100)}%"></div></div><div class="bar-val">${e.actions[a.id]}${a.unit}</div></div>`;});
-    html+='</div>';
-  });
-  html+='</div></div>';
-  // Most active employees detail
-  html+='<div class="card"><div class="card-header"><div class="card-title">🔥 Chi Tiết Hoạt Động</div></div><div class="card-body" style="overflow-x:auto"><table class="period-table"><thead><tr><th>Nhân Viên</th>'+ALL_ACTIONS.map(a=>`<th title="${a.label}">${a.icon}</th>`).join('')+'<th>Tổng</th></tr></thead><tbody>';
-  Object.values(empMap).sort((a,b)=>b.total-a.total).forEach(e=>{
-    html+=`<tr><td style="font-weight:600;font-size:12px;white-space:nowrap">${e.name.split(' ').slice(-2).join(' ')}</td>`;
-    ALL_ACTIONS.forEach(a=>{const v=e.actions[a.id]||0;html+=`<td style="text-align:center;font-size:12px;color:${v>0?'var(--txt)':'var(--txt3)'}">${v||'—'}</td>`;});
-    html+=`<td style="font-family:Syne,sans-serif;font-weight:800;color:var(--accent2)">${e.total}</td></tr>`;
-  });
-  html+='</tbody></table></div></div>';
+  const{empMap,actTotals}=currentAnalyticsData;
+  const selEl=document.getElementById('activitySelect');
+  const selectedId=selEl?selEl.value:'';
+
+  // Populate dropdown options once
+  if(selEl&&selEl.options.length<=1){
+    ALL_ACTIONS.forEach(a=>{
+      const opt=document.createElement('option');
+      opt.value=a.id;opt.textContent=a.icon+' '+a.label;
+      selEl.appendChild(opt);
+    });
+  }
+
+  let html='';
+
+  if(!selectedId){
+    // ── TỔNG QUAN: bảng tất cả hoạt động ──
+    html+='<div class="card"><div class="card-header"><div class="card-title">🔥 Bảng Xếp Hạng Tổng Hợp</div><span class="badge badge-blue">Tất cả hoạt động</span></div><div class="card-body" style="overflow-x:auto">';
+    html+='<table class="period-table"><thead><tr><th>#</th><th>Nhân Viên</th>'+ALL_ACTIONS.map(a=>`<th title="${a.label}" style="text-align:center">${a.icon}</th>`).join('')+'<th>Tổng</th></tr></thead><tbody>';
+    const sorted=Object.values(empMap).sort((a,b)=>b.total-a.total);
+    sorted.forEach((e,i)=>{
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
+      html+=`<tr><td style="font-weight:800;font-size:13px;text-align:center">${medal}</td><td style="font-weight:600;font-size:12px;white-space:nowrap">${e.name.split(' ').slice(-2).join(' ')}</td>`;
+      ALL_ACTIONS.forEach(a=>{
+        const v=e.actions[a.id]||0;
+        const maxV=Math.max(...Object.values(empMap).map(x=>x.actions[a.id]||0),1);
+        const pct=Math.round(v/maxV*100);
+        html+=`<td style="text-align:center;font-size:12px">`;
+        if(v>0)html+=`<div style="font-weight:700;color:var(--accent2)">${v}</div><div style="height:3px;background:linear-gradient(90deg,var(--accent),var(--orange));width:${pct}%;border-radius:2px;margin:2px auto"></div>`;
+        else html+=`<span style="color:var(--txt3)">—</span>`;
+        html+='</td>';
+      });
+      html+=`<td style="font-family:Syne,sans-serif;font-weight:800;color:var(--accent2);font-size:15px">${e.total}</td></tr>`;
+    });
+    if(!sorted.length)html+='<tr><td colspan="99" style="text-align:center;padding:20px;color:var(--txt3)">Chưa có dữ liệu</td></tr>';
+    html+='</tbody></table></div></div>';
+
+    // Top 3 mỗi loại – 2 cột
+    html+='<div class="card"><div class="card-header"><div class="card-title">🏅 Top 3 Từng Loại – Chọn hoạt động bên trên để xem chi tiết</div></div><div class="card-body">';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    ALL_ACTIONS.forEach(a=>{
+      const top=Object.values(empMap).filter(e=>e.actions[a.id]>0).sort((x,y)=>y.actions[a.id]-x.actions[a.id]).slice(0,3);
+      if(!top.length)return;
+      const max=top[0].actions[a.id];
+      html+=`<div style="padding:10px;background:var(--bg3);border-radius:10px;border:1px solid var(--bg4)">`;
+      html+=`<div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--txt2)">${a.icon} ${a.label}</div>`;
+      top.forEach((e,j)=>{html+=`<div class="bar-row"><div class="bar-label" style="width:120px">${['🥇','🥈','🥉'][j]} ${e.name.split(' ').slice(-2).join(' ')}</div><div class="bar-track"><div class="bar-fill${j>0?' blue':''}" style="width:${Math.round(e.actions[a.id]/max*100)}%"></div></div><div class="bar-val">${e.actions[a.id]}${a.unit}</div></div>`;});
+      html+='</div>';
+    });
+    html+='</div></div></div>';
+
+  } else {
+    // ── CHI TIẾT: 1 hoạt động được chọn ──
+    const a=ALL_ACTIONS.find(x=>x.id===selectedId);
+    if(!a){document.getElementById('atab-activity').innerHTML='';return;}
+
+    const ranked=Object.values(empMap).map(e=>({...e,val:e.actions[selectedId]||0})).sort((a,b)=>b.val-a.val);
+    const maxVal=Math.max(...ranked.map(e=>e.val),1);
+    const total=ranked.reduce((s,e)=>s+e.val,0);
+    const active=ranked.filter(e=>e.val>0).length;
+
+    html+=`<div class="card" style="border-color:rgba(232,50,28,.4)">
+      <div class="card-header">
+        <div class="card-title">${a.icon} Bảng Xếp Hạng: ${a.label}</div>
+        <div style="display:flex;gap:8px">
+          <span class="badge badge-red">Tổng: ${total} ${a.unit}</span>
+          <span class="badge badge-gray">${active}/${ranked.length} NV</span>
+        </div>
+      </div>
+      <div class="card-body">`;
+
+    ranked.forEach((e,i)=>{
+      if(e.val===0&&i>=active)return;
+      const pct=maxVal>0?Math.round(e.val/maxVal*100):0;
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+      const isEmpty=e.val===0;
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;background:${isEmpty?'transparent':'var(--bg3)'};border:1px solid ${isEmpty?'transparent':'var(--bg4)'};opacity:${isEmpty?0.4:1}">
+        <div style="width:28px;text-align:center;font-size:${i<3?'18px':'13px'};font-weight:800">${medal}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--orange));display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:11px;color:#fff;flex-shrink:0">${e.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+          <div style="height:6px;background:var(--bg4);border-radius:3px;margin-top:5px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--orange));border-radius:3px;transition:.5s"></div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:Syne,sans-serif;font-size:${isEmpty?'14px':'22px'};font-weight:800;color:${isEmpty?'var(--txt3)':'var(--accent2)'}">${e.val}</div>
+          <div style="font-size:10px;color:var(--txt3)">${a.unit}</div>
+        </div>
+      </div>`;
+    });
+    html+='</div></div>';
+
+    // Thống kê nhanh
+    const avg=active>0?(total/active).toFixed(1):0;
+    const top3total=ranked.slice(0,3).reduce((s,e)=>s+e.val,0);
+    const top3pct=total>0?Math.round(top3total/total*100):0;
+    html+=`<div class="stat-grid">
+      <div class="stat-box"><div class="stat-num accent">${total}</div><div class="stat-lbl">Tổng ${a.unit}</div></div>
+      <div class="stat-box"><div class="stat-num">${active}</div><div class="stat-lbl">NV tham gia</div></div>
+      <div class="stat-box"><div class="stat-num">${avg}</div><div class="stat-lbl">Trung bình/NV</div></div>
+      <div class="stat-box"><div class="stat-num" style="color:var(--gold)">${top3pct}%</div><div class="stat-lbl">Top 3 đóng góp</div></div>
+    </div>`;
+  }
+
   document.getElementById('atab-activity').innerHTML=html;
 }
 
