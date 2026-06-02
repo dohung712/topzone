@@ -770,37 +770,35 @@ checkLogin();
 
 <!-- ═══ TAB: CÀI ĐẶT ═══ -->
 <div class="section" id="tab-settings">
-  <!-- JSONBIN SHARED DATA -->
+  <!-- GOOGLE SHEETS SHARED DATA -->
   <div class="card" style="border-color:rgba(0,201,122,.3)">
     <div class="card-header">
-      <div class="card-title">☁️ Dữ Liệu Chia Sẻ (JSONBin.io)</div>
-      <span id="jsonbinBadge" class="badge badge-warn">⚠️ Chưa setup</span>
+      <div class="card-title">☁️ Đồng Bộ Dữ Liệu (Google Sheets – Miễn Phí)</div>
+      <span id="sheetsBadge" class="badge badge-warn">⚠️ Chưa setup</span>
     </div>
     <div class="card-body">
-      <p style="font-size:13px;color:var(--txt2);line-height:1.7">Dùng <strong>JSONBin.io</strong> (miễn phí) làm backend. Tất cả nhân viên mở cùng 1 file HTML → dữ liệu tự đồng bộ qua cloud.</p>
+      <p style="font-size:13px;color:var(--txt2);line-height:1.7">Dùng <strong>Google Sheets + Apps Script</strong> làm backend. <strong>Miễn phí hoàn toàn, không giới hạn</strong> request. Cùng 1 URL dùng cho cả đồng bộ lẫn upload Drive.</p>
 
-      <div style="margin:12px 0;padding:12px 14px;background:rgba(46,139,255,.08);border:1px solid rgba(46,139,255,.2);border-radius:10px;font-size:12px;color:var(--blue);line-height:1.8">
-        <strong>📋 Hướng dẫn setup (1 lần duy nhất, cho Quản Lý):</strong><br>
-        1. Vào <a href="https://jsonbin.io" target="_blank" style="color:var(--blue)">jsonbin.io</a> → Đăng ký miễn phí<br>
-        2. Vào <strong>API Keys</strong> → Copy <strong>Master Key</strong><br>
-        3. Nhấn <strong>Create Bin</strong> → nhập <code style="background:var(--bg4);padding:1px 4px;border-radius:3px">[]</code> → Copy <strong>Bin ID</strong> (phần sau /b/)<br>
-        4. Dán 2 thông tin vào dưới → Lưu → Chia link HTML cho nhân viên
+      <div style="margin:12px 0;padding:12px 14px;background:rgba(46,139,255,.08);border:1px solid rgba(46,139,255,.2);border-radius:10px;font-size:12px;color:var(--blue);line-height:2">
+        <strong>📋 Hướng dẫn setup (1 lần duy nhất – Quản Lý làm):</strong><br>
+        1. Vào <a href="https://sheets.google.com" target="_blank" style="color:var(--blue)">sheets.google.com</a> → Tạo Spreadsheet mới → Copy <strong>Sheet ID</strong> từ URL<br>
+        2. Vào <a href="https://drive.google.com" target="_blank" style="color:var(--blue)">drive.google.com</a> → Tạo thư mục mới → Copy <strong>Folder ID</strong> từ URL<br>
+        3. Vào <a href="https://script.google.com" target="_blank" style="color:var(--blue)">script.google.com</a> → <strong>New project</strong> → Dán code từ file <strong>topzone_script.gs</strong><br>
+        4. Sửa <code style="background:var(--bg4);padding:1px 5px;border-radius:3px">SHEET_ID</code> và <code style="background:var(--bg4);padding:1px 5px;border-radius:3px">FOLDER_ID</code> trong script<br>
+        5. <strong>Deploy → New deployment → Web App</strong><br>
+        &nbsp;&nbsp;&nbsp;• Execute as: <strong>Me</strong><br>
+        &nbsp;&nbsp;&nbsp;• Who has access: <strong>Anyone</strong><br>
+        6. Copy <strong>Web App URL</strong> → Dán vào ô bên dưới → Lưu
       </div>
 
-      <div class="setup-step"><div class="step-num">1</div><div class="step-text">Nhập <strong>Master Key</strong> từ JSONBin (bắt đầu bằng $2a$...)</div></div>
-      <span class="field-label">JSONBin Master Key</span>
+      <div class="setup-step"><div class="step-num">1</div><div class="step-text">Dán <strong>Apps Script Web App URL</strong> vào đây</div></div>
+      <span class="field-label">Apps Script URL</span>
       <div style="display:flex;gap:8px">
-        <input type="password" id="jsonbinApiKey" placeholder="$2a$10$...">
+        <input type="text" id="sheetsScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" style="font-size:12px">
+        <button class="btn btn-ghost btn-sm" onclick="testSheets()">🔌 Test</button>
+        <button class="btn btn-green btn-sm" onclick="saveSheets()">Lưu</button>
       </div>
-
-      <div class="setup-step" style="margin-top:14px"><div class="step-num">2</div><div class="step-text">Nhập <strong>Bin ID</strong> (chuỗi ký tự sau /b/ trong URL)</div></div>
-      <span class="field-label">Bin ID</span>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="jsonbinBinId" placeholder="64f2a8...">
-        <button class="btn btn-ghost btn-sm" onclick="testJsonbin()">🔌 Test</button>
-        <button class="btn btn-green btn-sm" onclick="saveJsonbin()">Lưu</button>
-      </div>
-      <div id="jsonbinLog" class="drive-log" style="margin-top:8px"><span class="info"># Nhập API Key và Bin ID → Test → Lưu</span></div>
+      <div id="sheetsLog" class="drive-log" style="margin-top:8px"><span class="info"># Nhập URL → Test → Lưu</span></div>
 
       <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <div id="sharedStats" style="font-size:12px;color:var(--txt3)">Chưa đồng bộ</div>
@@ -809,7 +807,7 @@ checkLogin();
       </div>
 
       <div style="margin-top:12px;padding:10px 14px;background:var(--green-bg);border:1px solid rgba(0,201,122,.2);border-radius:10px;font-size:12px;color:var(--green)">
-        ✅ <strong>Sau khi setup:</strong> Nhân viên chỉ cần mở file HTML (hoặc link GitHub Pages) → dữ liệu tự đồng bộ · Free 10k requests/tháng
+        ✅ <strong>Ưu điểm:</strong> Miễn phí · Không giới hạn · Dữ liệu lưu trong Google Sheets của bạn · URL này dùng luôn cho upload Drive
       </div>
     </div>
   </div>
@@ -838,26 +836,22 @@ checkLogin();
   <div class="card" style="border-color:rgba(46,139,255,.3)">
     <div class="card-header">
       <div class="card-title">📁 Google Drive – Upload Hình & Video</div>
-      <span id="gdriveBadge" class="badge badge-green">✅ Đã setup</span>
+      <span id="gdriveBadge" class="badge badge-warn">⚠️ Chưa setup</span>
     </div>
     <div class="card-body">
-      <p style="font-size:13px;color:var(--txt2);line-height:1.7">Ảnh và video sẽ lưu lên <strong>Google Drive</strong>. Mỗi báo cáo tạo 1 sub-folder riêng theo tên NV + ngày.</p>
+      <p style="font-size:13px;color:var(--txt2);line-height:1.7">Ảnh và video tự động lưu lên <strong>Google Drive</strong> của bạn. Mỗi NV có sub-folder riêng theo tháng.</p>
 
-      <div style="margin:10px 0;padding:10px 14px;background:var(--green-bg);border:1px solid rgba(0,201,122,.2);border-radius:10px;font-size:12px;color:var(--green)">
-        ✅ <strong>Apps Script URL đã được cài sẵn</strong> – Upload ảnh & video lên Google Drive hoạt động ngay, không cần cấu hình thêm.
+      <div style="margin:10px 0;padding:10px 14px;background:rgba(46,139,255,.08);border:1px solid rgba(46,139,255,.2);border-radius:10px;font-size:12px;color:var(--blue)">
+        ℹ️ Upload Drive dùng <strong>chung URL Apps Script</strong> đã nhập ở trên. Chỉ cần setup 1 lần là hoạt động cả đồng bộ lẫn upload ảnh/video.
       </div>
 
-      <span class="field-label">Google Apps Script Web App URL (tùy chọn – để ghi đè)</span>
+      <span class="field-label">Apps Script URL (tùy chọn – ghi đè URL ở trên)</span>
       <div style="display:flex;gap:8px">
-        <input type="text" id="gdriveUrl" placeholder="Để trống = dùng URL mặc định" style="font-size:12px">
+        <input type="text" id="gdriveUrl" placeholder="Để trống = dùng URL đã nhập ở mục Đồng Bộ" style="font-size:12px">
         <button class="btn btn-ghost btn-sm" onclick="testGdrive()">🔌 Test</button>
         <button class="btn btn-green btn-sm" onclick="saveGdrive()">Lưu</button>
       </div>
       <div id="gdriveLog" class="drive-log" style="margin-top:8px"><span class="info"># Log Google Drive</span></div>
-
-      <div style="margin-top:12px;padding:10px 14px;background:rgba(46,139,255,.08);border:1px solid rgba(46,139,255,.2);border-radius:10px;font-size:12px;color:var(--blue)">
-        📋 Muốn dùng Drive riêng? Tải <strong>topzone_drive_upload.gs</strong> → Deploy lên Apps Script của bạn → Dán URL mới vào ô trên.
-      </div>
     </div>
   </div>
 
@@ -967,12 +961,13 @@ const KEYWORD_MAP = {
 const LOCAL_KEY     = 'tz_reports_v6';
 const HASH_KEY      = 'tz_hashes_v6';
 const GDRIVE_KEY    = 'tz_gdrive_url';
-const GDRIVE_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbwNujAQ8x0mkkfJW7DK5d7Ll36R3QaExl2iW_rFDXvOraDSAc-2D3z2e6IEyt0waWnjNg/exec';
+const GDRIVE_DEFAULT_URL = '';   // để trống – dùng URL do người dùng nhập
 const THEME_KEY     = 'tz_theme_v6';
-const JSONBIN_KEY   = 'tz_jsonbin_v6';
+const SCRIPT_KEY    = 'tz_script_url_v6'; // key lưu Apps Script URL
 
-// JSONBin.io config (pre-filled)
-let jsonbinCfg = {apiKey:'$2a$10$QN7YosZtw1ISpF4oYcjMW.9uVCCmFNzx1C0Lnox.NSKL9AsJJZvpG', binId:'6a1c226b21f9ee59d2a0e6b2'};
+// Google Sheets sync config (thay JSONBin)
+const SCRIPT_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbyhODrgcVQ9olh-gh_OTaFMIYo12mJVCGRLMarU_vj-vzMfGM_gS5AOuFQKRbGhguPs/exec';
+let scriptUrl = SCRIPT_DEFAULT_URL;
 
 // State
 let reports = [];
@@ -1054,31 +1049,26 @@ function lighten(hex,pct){const[r,g,b]=hex2rgb(hex);return rgb2hex(r+pct*2,g+pct
 function alpha(hex,a){const[r,g,b]=hex2rgb(hex);return`rgba(${r},${g},${b},${a})`;}
 function shiftHue(hex,deg){const[r,g,b]=hex2rgb(hex);return rgb2hex(r+deg*.3,g+deg*.1,b-deg*.1);}
 
-// ─── JSONBIN.IO SHARED STORAGE ───
-// Free tier: 10k reads/writes per month, perfect for small teams
-// Setup: jsonbin.io → Sign up free → Create Bin → Copy API Key + Bin ID
+// ─── GOOGLE SHEETS SHARED STORAGE ───
+// Miễn phí hoàn toàn, không giới hạn request
+// Dùng chung 1 Apps Script URL cho cả upload Drive + đồng bộ Sheets
 
-function loadJsonbinCfg(){
-  try{const s=localStorage.getItem(JSONBIN_KEY);if(s){jsonbinCfg=JSON.parse(s);}}catch{}
+function loadScriptUrl(){
+  scriptUrl = localStorage.getItem(SCRIPT_KEY) || SCRIPT_DEFAULT_URL;
 }
-function saveJsonbinCfg(){
-  localStorage.setItem(JSONBIN_KEY,JSON.stringify(jsonbinCfg));
-}
-function jsonbinReady(){
-  return !!(jsonbinCfg.apiKey && jsonbinCfg.binId);
+function sheetsReady(){
+  return !!scriptUrl;
 }
 
 async function syncFromShared(){
-  if(!jsonbinReady()){setSyncUI('off');showToast('⚠️ Chưa cấu hình JSONBin. Vào Cài Đặt → Shared Storage');return;}
+  if(!sheetsReady()){setSyncUI('off');showToast('⚠️ Chưa nhập Apps Script URL. Vào Cài Đặt');return;}
   setSyncUI('syncing');
   try{
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${jsonbinCfg.binId}/latest`,{
-      headers:{'X-Master-Key':jsonbinCfg.apiKey,'X-Bin-Meta':false}
-    });
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    const shared=Array.isArray(data)?data:(data.reports||[]);
-    if(Array.isArray(shared)&&shared.length>=0){
+    const res = await fetch(scriptUrl + '?action=read');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const shared = data.reports || [];
+    if(Array.isArray(shared)){
       const localMap={};reports.forEach(r=>{localMap[r.id]=r;});
       const merged=shared.map(sr=>{
         const lr=localMap[sr.id];
@@ -1096,15 +1086,15 @@ async function syncFromShared(){
 }
 
 async function pushToShared(){
-  if(!jsonbinReady()){setSyncUI('off');return;}
+  if(!sheetsReady()){setSyncUI('off');return;}
   try{
     const slim=reports.map(r=>{const{photos,...rest}=r;return{...rest,photoCount:r.photoCount||(photos||[]).length};});
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${jsonbinCfg.binId}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':jsonbinCfg.apiKey,'X-Bin-Versioning':false},
-      body:JSON.stringify(slim)
+    const res=await fetch(scriptUrl,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'}, // tránh CORS preflight
+      body:JSON.stringify({action:'write',reports:slim})
     });
-    if(!res.ok)throw new Error('HTTP '+res.status);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
     setSyncUI('on');
   }catch(e){
     setSyncUI('off');console.warn('Push failed:',e);
@@ -1113,49 +1103,58 @@ async function pushToShared(){
 
 async function clearSharedData(){
   if(!confirm('Xoá toàn bộ dữ liệu SHARED? (Không thể hoàn tác)'))return;
-  if(!jsonbinReady()){showToast('⚠️ Chưa cấu hình JSONBin');return;}
+  if(!sheetsReady()){showToast('⚠️ Chưa nhập Apps Script URL');return;}
   try{
-    await fetch(`https://api.jsonbin.io/v3/b/${jsonbinCfg.binId}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':jsonbinCfg.apiKey,'X-Bin-Versioning':false},
-      body:JSON.stringify([])
+    await fetch(scriptUrl,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'write',reports:[]})
     });
     reports=[];save();showToast('🗑 Đã xoá shared data');updateSharedUI();
   }catch(e){showToast('❌ Lỗi: '+e.message);}
 }
 
-// JSONBin setup functions
-async function testJsonbin(){
-  const k=document.getElementById('jsonbinApiKey').value.trim();
-  const b=document.getElementById('jsonbinBinId').value.trim();
-  const log=document.getElementById('jsonbinLog');
-  if(!k||!b){log.innerHTML='<span class="err">⚠️ Nhập cả API Key và Bin ID</span>';return;}
-  log.innerHTML='<span class="info">⏳ Đang kiểm tra...</span>';
+// Sheets setup functions
+async function testSheets(){
+  const url=document.getElementById('sheetsScriptUrl').value.trim();
+  const log=document.getElementById('sheetsLog');
+  if(!url){log.innerHTML='<span class="err">⚠️ Nhập Apps Script URL</span>';return;}
+  log.innerHTML='<span class="info">⏳ Đang kiểm tra kết nối...</span>';
   try{
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${b}/latest`,{headers:{'X-Master-Key':k,'X-Bin-Meta':false}});
-    if(res.ok){log.innerHTML='<span class="ok">✅ Kết nối thành công! Nhấn Lưu để sử dụng.</span>';}
-    else{log.innerHTML=`<span class="err">❌ Lỗi ${res.status}: Kiểm tra lại API Key và Bin ID</span>`;}
-  }catch(e){log.innerHTML=`<span class="err">❌ Lỗi kết nối: ${e.message}</span>`;}
+    const res=await fetch(url+'?action=ping');
+    if(res.ok){
+      const j=await res.json();
+      log.innerHTML=`<span class="ok">✅ Kết nối thành công: ${j.status||'OK'} – Nhấn Lưu!</span>`;
+    }else{
+      log.innerHTML=`<span class="err">❌ Lỗi ${res.status} – Kiểm tra lại URL và quyền Deploy</span>`;
+    }
+  }catch(e){log.innerHTML=`<span class="err">❌ Lỗi: ${e.message} – Kiểm tra URL và Deploy (Anyone)</span>`;}
 }
 
-function saveJsonbin(){
-  const k=document.getElementById('jsonbinApiKey').value.trim();
-  const b=document.getElementById('jsonbinBinId').value.trim();
-  const log=document.getElementById('jsonbinLog');
-  if(!k||!b){log.innerHTML='<span class="err">⚠️ Nhập cả 2 trường</span>';return;}
-  jsonbinCfg={apiKey:k,binId:b};saveJsonbinCfg();
+function saveSheets(){
+  const url=document.getElementById('sheetsScriptUrl').value.trim();
+  const log=document.getElementById('sheetsLog');
+  if(!url){log.innerHTML='<span class="err">⚠️ Nhập URL</span>';return;}
+  scriptUrl=url;
+  localStorage.setItem(SCRIPT_KEY,url);
+  // cùng dùng URL này cho Drive upload
+  gdriveUrl=url;localStorage.setItem(GDRIVE_KEY,url);
+  updateSheetsUI();
   log.innerHTML='<span class="ok">✅ Đã lưu! Đang đồng bộ...</span>';
-  updateJsonbinUI();syncFromShared();
+  syncFromShared();
 }
 
-function updateJsonbinUI(){
-  const badge=document.getElementById('jsonbinBadge');
-  const ready=jsonbinReady();
-  if(badge){badge.className='badge '+(ready?'badge-green':'badge-warn');badge.textContent=ready?'✅ Đã cấu hình':'⚠️ Chưa setup';}
-  const apiEl=document.getElementById('jsonbinApiKey');const binEl=document.getElementById('jsonbinBinId');
-  if(apiEl&&jsonbinCfg.apiKey)apiEl.value=jsonbinCfg.apiKey;
-  if(binEl&&jsonbinCfg.binId)binEl.value=jsonbinCfg.binId;
+function updateSheetsUI(){
+  const badge=document.getElementById('sheetsBadge');
+  if(!badge)return;
+  if(sheetsReady()){badge.className='badge badge-green';badge.textContent='✅ Đã cấu hình';}
+  else{badge.className='badge badge-warn';badge.textContent='⚠️ Chưa setup';}
+  const inp=document.getElementById('sheetsScriptUrl');
+  if(inp)inp.value=scriptUrl||SCRIPT_DEFAULT_URL;
 }
+
+// Alias cũ để không cần sửa chỗ khác
+function updateJsonbinUI(){ updateSheetsUI(); }
 
 function setSyncUI(state){
   const pill=document.getElementById('syncPill');
@@ -1184,9 +1183,8 @@ function updateSharedUI(){
 function load(){
   try{reports=JSON.parse(localStorage.getItem(LOCAL_KEY)||'[]');}catch{reports=[];}
   try{photoHashes=JSON.parse(localStorage.getItem(HASH_KEY)||'{}');}catch{photoHashes={};}
-  gdriveUrl=localStorage.getItem(GDRIVE_KEY)||GDRIVE_DEFAULT_URL;
-  if(!localStorage.getItem(GDRIVE_KEY)&&GDRIVE_DEFAULT_URL){localStorage.setItem(GDRIVE_KEY,GDRIVE_DEFAULT_URL);}
-  loadJsonbinCfg();
+  loadScriptUrl();
+  gdriveUrl=localStorage.getItem(GDRIVE_KEY)||scriptUrl||'';
 }
 function save(){
   localStorage.setItem(LOCAL_KEY,JSON.stringify(reports));
@@ -1216,11 +1214,11 @@ async function initApp(){
   const sb=document.getElementById('shiftBadge');
   if(sb){sb.textContent=h<14?'Ca Sáng':h<20?'Ca Chiều':'Ca Tối';sb.className='badge '+(h<14?'badge-gold':h<20?'badge-blue':'badge-red');}
   // Sync from shared if configured
-  if(jsonbinReady()){await syncFromShared();}else{
+  if(sheetsReady()){await syncFromShared();}else{
     setSyncUI('off');updateSharedUI();
     // Update banner
     const sub=document.querySelector('.shared-banner-sub');
-    if(sub)sub.textContent='⚠️ Chưa setup đồng bộ · Vào Cài Đặt → nhập JSONBin Key + Bin ID';
+    if(sub)sub.textContent='⚠️ Chưa setup đồng bộ · Vào Cài Đặt → nhập Apps Script URL';
     const cnt=document.getElementById('sharedCount');if(cnt)cnt.textContent='!';
   }
 }
@@ -1392,15 +1390,15 @@ function runSmartAnalysis(){
 
 // ─── GOOGLE DRIVE UPLOAD ───
 async function uploadToDrive(fileData, fileName, mimeType, empName, reportDate, fileType){
-  const url=gdriveUrl||GDRIVE_DEFAULT_URL;
+  const url=gdriveUrl||scriptUrl;
   if(!url)return null;
   try{
     // Convert dataUrl to base64 only
     const b64=fileData.includes(',') ? fileData.split(',')[1] : fileData;
     const res=await fetch(url,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({fileName,fileData:b64,mimeType,empName,reportDate,fileType})
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action:'upload',fileName,fileData:b64,mimeType,empName,reportDate,fileType})
     });
     const j=await res.json();
     return j.success ? j : null;
@@ -1434,11 +1432,11 @@ function saveGdrive(){
 function updateGdriveUI(){
   const badge=document.getElementById('gdriveBadge');
   if(!badge)return;
-  const effective=gdriveUrl||GDRIVE_DEFAULT_URL;
+  const effective=gdriveUrl||scriptUrl;
   if(effective){badge.textContent='✅ Đã setup';badge.className='badge badge-green';}
   else{badge.textContent='⚠️ Chưa setup';badge.className='badge badge-warn';}
   const inp=document.getElementById('gdriveUrl');
-  if(inp)inp.value=effective||'';
+  if(inp&&gdriveUrl&&gdriveUrl!==scriptUrl)inp.value=gdriveUrl;
 }
 
 // ─── SUBMIT ───
@@ -2255,14 +2253,14 @@ function goTab(name,btn){
   if(name==='history')renderHistory();
   if(name==='analytics')renderAnalytics();
   if(name==='leaderboard')renderLeaderboard();
-  if(name==='settings'){updateGdriveUI();updateJsonbinUI();document.getElementById('hashCountSett').textContent=Object.keys(photoHashes).length;updateSharedUI();}
+  if(name==='settings'){updateGdriveUI();updateSheetsUI();document.getElementById('hashCountSett').textContent=Object.keys(photoHashes).length;updateSharedUI();}
   if(name==='export')updateMeta();
 }
 
 document.getElementById('previewModal').addEventListener('click',e=>{if(e.target===document.getElementById('previewModal'))closeModal();});
 
-// Auto sync every 60s (only if configured)
-setInterval(async()=>{if(jsonbinReady())await syncFromShared();},60000);
+// Auto sync every 5 minutes (Google Sheets – không giới hạn)
+setInterval(async()=>{if(sheetsReady())await syncFromShared();},5*60*1000);
 </script>
 </body>
 </html>
