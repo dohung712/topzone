@@ -370,7 +370,7 @@ hr.div{border:none;border-top:1px solid var(--bg4);margin:16px 0}
 // ĐỔI MẬT KHẨU TẠI ĐÂY:
 const PASSWORDS = {
   NV: 'topzone2024',   // Mật khẩu cho Nhân Viên
-  QL: 'admin@tz2024',  // Mật khẩu cho Quản Lý (có thêm quyền)
+  QL: '2026',  // Mật khẩu cho Quản Lý (có thêm quyền)
 };
 const LOGIN_KEY = 'tz_login_v6';
 let currentRole = '';
@@ -693,6 +693,7 @@ checkLogin();
     <button class="atab" onclick="switchAtab('monthly',this)">🗓️ Theo Tháng</button>
     <button class="atab" onclick="switchAtab('missing',this)">⚠️ Thiếu BC</button>
     <button class="atab" onclick="switchAtab('activity',this)">🏃 Hoạt Động</button>
+    <button class="atab" onclick="switchAtab('pg',this)">🎪 PG</button>
   </div>
 
   <!-- ACTIVITY FILTER (chỉ hiện khi ở tab Hoạt Động) -->
@@ -711,6 +712,7 @@ checkLogin();
   <div id="atab-monthly" style="display:none"></div>
   <div id="atab-missing" style="display:none"></div>
   <div id="atab-activity" style="display:none"></div>
+  <div id="atab-pg" style="display:none"></div>
 
   <!-- ZALO PANEL -->
   <div id="zaloPanel" style="display:none;margin-top:16px">
@@ -976,7 +978,7 @@ const THEME_KEY     = 'tz_theme_v6';
 const SCRIPT_KEY    = 'tz_script_url_v6'; // key lưu Apps Script URL
 
 // Google Sheets sync config (thay JSONBin)
-const SCRIPT_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbxI5e-ISZJdeN4XWtRzOB3lUHAUp3ScqPCx85vZ6F6eUJprOahsCzRggzf2SY2ahkYK/exec';
+const SCRIPT_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbwBBaJUNfif7z6Q-o2c5NTNdvrapLATd3fEG5X1rY6b5J13JMyMZ2keWAUhayC292AO/exec';
 let scriptUrl = SCRIPT_DEFAULT_URL;
 
 // State
@@ -1482,6 +1484,8 @@ async function submitReport(){
       const result=await uploadToDrive(p.dataUrl,fname,p.type||'image/jpeg',name,date,'image');
       if(result){
         driveLinks.push({viewUrl:result.viewUrl,thumbUrl:result.thumbUrl,fileId:result.fileId,name:fname});
+        // Lưu link thư mục Drive theo tên NV
+        if(result.folderUrl){const emp=document.getElementById('empSelect')?.value||'';const fmap=JSON.parse(localStorage.getItem('tz_emp_folder_urls')||'{}');fmap[emp]=result.folderUrl;localStorage.setItem('tz_emp_folder_urls',JSON.stringify(fmap));}
         currentPhotos[i].driveData=result;
       }
     }
@@ -1758,6 +1762,22 @@ async function deleteReport(id){
   showToast('🗑 Đã xoá báo cáo · Shared');
 }
 
+// ─── DRIVE FOLDER URL HELPER ───
+// Tạo link thư mục Drive của từng nhân viên dựa trên FOLDER_ID trong script
+// URL dạng: search trong Drive folder gốc theo tên NV
+function getDriveEmpFolderUrl(empName){
+  // Ưu tiên: link thư mục Drive thực tế đã lưu sau khi upload
+  const fmap=JSON.parse(localStorage.getItem('tz_emp_folder_urls')||'{}');
+  if(fmap[empName]) return fmap[empName];
+  // Fallback: search Drive theo tên
+  return `https://drive.google.com/drive/search?q=${encodeURIComponent(empName)}`;
+}
+
+// Lưu FOLDER_ID để dùng cho link thư mục
+function saveDriveFolderId(folderId){
+  if(folderId) localStorage.setItem('tz_drive_folder_id', folderId);
+}
+
 // ─── HISTORY ───
 function renderHistory(){
   const days=parseInt(document.getElementById('filterDays').value||7);
@@ -1809,6 +1829,9 @@ function renderHistory(){
     const deleteBtn=isManager?`<button class="btn btn-danger" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="event.stopPropagation();deleteReport(${r.id})">🗑 Xoá</button>`:'';
     const mediaCount=(totalImgs||0)+(totalVids||0);
     const viewPhotoBtn=mediaCount>0?`<button class="btn btn-blue btn-xs" onclick="openGallery(${r.id})" style="font-size:11px">📸${totalImgs>0?' '+totalImgs+' ảnh':''}${totalVids>0?' 🎬'+totalVids+' vid':''}</button>`:'';
+    // Nút mở thư mục Drive của nhân viên
+    const empFolderUrl=getDriveEmpFolderUrl(r.name);
+    const driveFolderBtn=empFolderUrl?`<a href="${empFolderUrl}" target="_blank" class="btn btn-ghost btn-xs" style="font-size:11px;text-decoration:none">📁 Thư mục Drive</a>`:'';
     return `<div class="log-item">
       <div class="log-head">
         <div class="log-name">${r.name}</div>
@@ -1821,7 +1844,11 @@ function renderHistory(){
       ${photosHtml}
       <div class="log-foot">
         <div style="font-size:12px;color:var(--txt3)">Tổng: <strong style="color:var(--txt)">${total}</strong> hành động · ${totalImgs} ảnh${totalVids?' · '+totalVids+' video':''}</div>
-        <div style="display:flex;gap:6px;align-items:center">${viewPhotoBtn}<span class="verdict-mini ${vc}">${vt}</span></div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${viewPhotoBtn}
+          ${driveFolderBtn}
+          <span class="verdict-mini ${vc}">${vt}</span>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1880,7 +1907,7 @@ function renderAnalytics(){
 function switchAtab(id,btn){
   document.querySelectorAll('.atab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  ['overview','daily','weekly','monthly','missing','activity'].forEach(t=>{
+  ['overview','daily','weekly','monthly','missing','activity','pg'].forEach(t=>{
     const el=document.getElementById('atab-'+t);if(el)el.style.display=t===id?'block':'none';
   });
   // Hiện/ẩn filter bar hoạt động
@@ -1897,6 +1924,7 @@ function renderAtab(id){
   else if(id==='monthly')renderAtabMonthly();
   else if(id==='missing')renderAtabMissing();
   else if(id==='activity')renderAtabActivity();
+  else if(id==='pg')renderAtabPG();
 }
 
 function renderAtabOverview(){
@@ -2078,6 +2106,85 @@ function renderAtabActivity(){
   }
 
   document.getElementById('atab-activity').innerHTML=html;
+}
+
+function renderAtabPG(){
+  const{filtered,empMap,actTotals}=currentAnalyticsData;
+
+  // Filter PG only
+  const pgEmps=Object.values(empMap).filter(e=>e.role==='PG');
+  const pgReports=filtered.filter(r=>r.role==='PG'||(EMPLOYEES.find(e=>e.name===r.name&&e.role==='PG')));
+
+  // PG act totals
+  const pgActTotals={};
+  ALL_ACTIONS.forEach(a=>pgActTotals[a.id]=0);
+  pgReports.forEach(r=>{Object.entries(r.actions||{}).forEach(([k,v])=>{pgActTotals[k]=(pgActTotals[k]||0)+v;});});
+
+  const totalPGActs=Object.values(pgActTotals).reduce((a,b)=>a+b,0);
+  const totalPGPhotos=pgReports.reduce((s,r)=>s+(r.photoCount||0),0);
+  const activePG=pgEmps.length;
+  const allPG=EMPLOYEES.filter(e=>e.role==='PG');
+  const missingPG=allPG.filter(e=>!pgEmps.find(x=>x.name===e.name));
+
+  let html='';
+
+  // KPI PG
+  html+=`<div class="stat-grid">
+    <div class="stat-box"><div class="stat-num accent">${pgReports.length}</div><div class="stat-lbl">📋 Báo cáo PG</div></div>
+    <div class="stat-box"><div class="stat-num">${totalPGActs}</div><div class="stat-lbl">🏃 Hành động</div></div>
+    <div class="stat-box"><div class="stat-num">${totalPGPhotos}</div><div class="stat-lbl">📸 Ảnh</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:${missingPG.length?'var(--warn)':'var(--green)'}">${missingPG.length}</div><div class="stat-lbl">⚠️ Chưa nộp</div></div>
+  </div>`;
+
+  // Ranking PG
+  if(pgEmps.length){
+    html+='<div class="card"><div class="card-header"><div class="card-title">🏅 Bảng Xếp Hạng PG</div><span class="badge badge-blue">'+pgEmps.length+' PG hoạt động</span></div><div class="card-body">';
+    const maxTotal=Math.max(...pgEmps.map(e=>e.total),1);
+    pgEmps.sort((a,b)=>b.total-a.total).forEach((e,i)=>{
+      const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`;
+      const pct=Math.round(e.total/maxTotal*100);
+      const folderUrl=getDriveEmpFolderUrl(e.name);
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:6px;background:var(--bg3);border:1px solid var(--bg4)">
+        <div style="width:28px;text-align:center;font-size:${i<3?'18px':'13px'};font-weight:800">${medal}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#9B59B6,#E8321C);display:flex;align-items:center;justify-content:center;font-family:Syne,sans-serif;font-weight:800;font-size:11px;color:#fff;flex-shrink:0">${e.name.split(' ').slice(-1)[0].slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.name}</div>
+            ${folderUrl?`<a href="${folderUrl}" target="_blank" style="font-size:10px;color:var(--blue);text-decoration:none;flex-shrink:0">📁 Drive</a>`:''}
+          </div>
+          <div style="font-size:11px;color:var(--txt3)">${e.rpts} bc · ${e.days.size} ngày · ${e.photos} ảnh</div>
+          <div style="height:5px;background:var(--bg4);border-radius:3px;margin-top:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#9B59B6,#E8321C);border-radius:3px"></div></div>
+        </div>
+        <div style="font-family:Syne,sans-serif;font-size:20px;font-weight:800;color:var(--accent2)">${e.total}</div>
+      </div>`;
+    });
+    html+='</div></div>';
+  } else {
+    html+='<div class="card"><div class="card-body"><div class="empty" style="padding:20px">Chưa có báo cáo PG trong kỳ này</div></div></div>';
+  }
+
+  // PG hoạt động detail table
+  if(pgEmps.length){
+    html+='<div class="card"><div class="card-header"><div class="card-title">📊 Chi Tiết Hoạt Động PG</div></div><div class="card-body" style="overflow-x:auto">';
+    html+='<table class="period-table"><thead><tr><th>PG</th>'+ALL_ACTIONS.map(a=>`<th title="${a.label}" style="text-align:center">${a.icon}</th>`).join('')+'<th>Tổng</th><th>Drive</th></tr></thead><tbody>';
+    pgEmps.sort((a,b)=>b.total-a.total).forEach(e=>{
+      const folderUrl=getDriveEmpFolderUrl(e.name);
+      html+=`<tr><td style="font-weight:600;font-size:12px;white-space:nowrap">${e.name.split(' ').slice(-2).join(' ')}</td>`;
+      ALL_ACTIONS.forEach(a=>{const v=e.actions[a.id]||0;html+=`<td style="text-align:center;font-size:12px;color:${v>0?'var(--txt)':'var(--txt3)'}">${v||'—'}</td>`;});
+      html+=`<td style="font-family:Syne,sans-serif;font-weight:800;color:var(--accent2)">${e.total}</td>`;
+      html+=`<td style="text-align:center">${folderUrl?`<a href="${folderUrl}" target="_blank" style="font-size:11px;color:var(--blue);text-decoration:none">📁</a>`:'—'}</td></tr>`;
+    });
+    html+='</tbody></table></div></div>';
+  }
+
+  // PG chưa nộp BC
+  if(missingPG.length){
+    html+='<div class="card" style="border-color:rgba(255,180,0,.3)"><div class="card-header"><div class="card-title">⚠️ PG Chưa Nộp Báo Cáo</div><span class="badge badge-warn">'+missingPG.length+'</span></div><div class="card-body">';
+    missingPG.forEach(e=>{html+=`<div style="padding:8px 12px;border-radius:8px;background:var(--bg3);margin-bottom:6px;font-size:13px;font-weight:600">${e.name}</div>`;});
+    html+='</div></div>';
+  }
+
+  document.getElementById('atab-pg').innerHTML=html;
 }
 
 function renderAtabDaily(){
